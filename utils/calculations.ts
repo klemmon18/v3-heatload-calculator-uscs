@@ -1,4 +1,3 @@
-
 import { SurfaceInput, UsageFactors, CalculationResult, GlassType, InsulationRValue } from '../types';
 
 export const calculateUSCSLoad = (
@@ -15,6 +14,10 @@ export const calculateUSCSLoad = (
   let qGlass_day = 0;
   let qSun_day = 0;
 
+  // Track total wall and glass area for glass dampening
+  let totalWallArea = 0;
+  let totalGlassArea = 0;
+
   // Find ceiling details for volume calculation
   const ceiling = surfaces.find(s => s.type === 'Ceiling');
   const floor = surfaces.find(s => s.type === 'Floor');
@@ -29,7 +32,6 @@ export const calculateUSCSLoad = (
   }
 
   // 1. Envelope and Glass Calculations (BTU/day)
-  // Factors derived from thermal performance benchmarks
   const FACTOR_GLASS_SINGLE = 28.0;
   const FACTOR_GLASS_DOUBLE = 15.0;
   const FACTOR_FLOOR_BASE = 0.25;
@@ -40,22 +42,28 @@ export const calculateUSCSLoad = (
     const deltaT = s.isExterior ? deltaT_Outdoor : deltaT_Interior;
     const totalArea = s.width * s.height;
     
-    const computedGlassArea = s.glassWidth * s.glassHeight;
+    const computedGlassArea = (s.glassWidth || 0) * (s.glassHeight || 0);
     const actualGlassArea = s.glassType === GlassType.None ? 0 : Math.min(totalArea, computedGlassArea);
     const wallArea = Math.max(0, totalArea - actualGlassArea);
+
+    // Track wall and glass area for wall surfaces only
+    if (s.type === 'Wall') {
+      totalWallArea += totalArea;
+      totalGlassArea += actualGlassArea;
+    }
 
     let conductionDay = 0;
     
     if (s.type === 'Floor') {
-      // Revised Floor Model: Area * DeltaT * Baseline * InsulationModifier * RadiantModifier
+      // Floor Model: Area * DeltaT * Baseline * InsulationModifier * RadiantModifier
       const insulationModifier = 11 / (11 + s.rValue);
       const radiantModifier = s.isRadiantFloor ? 1.5 : 1.0;
       conductionDay = (totalArea * deltaT * FACTOR_FLOOR_BASE) * insulationModifier * radiantModifier;
       qFloor_day += conductionDay;
     } else {
-      // Pure Conduction Model for Walls/Ceiling: (Area * DeltaT * 24) / R
+      // Pure Conduction Model for Walls/Ceiling with modest framing/bridging adjustment
       const effectiveR = Math.max(1, s.rValue || 1); // Fallback to R1 for uninsulated to avoid div by zero
-      conductionDay = (wallArea * deltaT * 24) / effectiveR;
+      conductionDay = ((wallArea * deltaT * 24) / effectiveR) * 1.10;
       
       if (s.type === 'Wall') qWalls_day += conductionDay;
       else if (s.type === 'Ceiling') qCeiling_day += conductionDay;
@@ -72,12 +80,22 @@ export const calculateUSCSLoad = (
     }
   });
 
+  // Glass dampener for extreme glass-heavy rooms
+  const glassRatio = totalWallArea > 0 ? totalGlassArea / totalWallArea : 0;
+
+  let glassDampener = 1.0;
+  if (glassRatio > 0.75) glassDampener = 0.80;
+  else if (glassRatio > 0.50) glassDampener = 0.90;
+
+  qGlass_day = qGlass_day * glassDampener;
+
   // 2. Occupancy Load (BTU/day)
   const qPeople_day = usage.peopleCount * 500 * usage.peopleHours;
 
   // 3. Appliances & Lighting (BTU/day)
-  // Standard 3.412 for BTU/W conversion
-  const qLighting_day = (usage.ledWatts * 3.412 * usage.ledHours) + (usage.incandescentWatts * 3.412 * usage.incandescentHours);
+  const qLighting_day =
+    (usage.ledWatts * 3.412 * usage.ledHours) +
+    (usage.incandescentWatts * 3.412 * usage.incandescentHours);
   
   // Qextra corresponds to "other loads" in thermal benchmarks
   const qAppliances_day = usage.applianceWatts * 3.412 * usage.applianceHours;
@@ -85,14 +103,18 @@ export const calculateUSCSLoad = (
   const qExtra_day = qAppliances_day + qEquipment_day;
 
   // 4. Infiltration & Latent Load (Qair_day)
-  // Revised Air Model: Volume * DeltaT * Baseline * DoorModifier
+  // Air Model: Volume * DeltaT * Baseline * DoorModifier
   const floorArea = floor ? floor.width * floor.height : (ceiling ? ceiling.width * ceiling.height : 0);
   const volume = floorArea * effectiveRoomHeight;
   const doorModifier = usage.frequentDoorOpening ? 1.25 : 1.0;
   const qAir_day = (volume * deltaT_Interior * FACTOR_AIR_BASE) * doorModifier;
 
   // 5. Daily Total
-  const qSubtotal_day = qWalls_day + qCeiling_day + qFloor_day + qGlass_day + qSun_day + qPeople_day + qLighting_day + qAir_day + qExtra_day;
+  let qSubtotal_day = qWalls_day + qCeiling_day + qFloor_day + qGlass_day + qSun_day + qPeople_day + qLighting_day + qAir_day + qExtra_day;
+
+  // Minimum baseline load floor for very small rooms
+  const minimumDailyLoad = volume * 20;
+  qSubtotal_day = Math.max(qSubtotal_day, minimumDailyLoad);
   
   // 6. Safety Factor (20%)
   const qSafety_day = qSubtotal_day * 0.20;
@@ -100,8 +122,7 @@ export const calculateUSCSLoad = (
   const totalDailyBtu = qSubtotal_day + qSafety_day;
   
   // 7. Final Sizing (BTU/hr = TotalDailyBTU / 16)
-  // We return the total with safety factor for the app
-  const totalBtuLoad = Math.round(totalDailyBtu / 16);
+  const totalBtuLoad = Math.round(totalDailyBtu / COMPRESSOR_RUNTIME);
 
   return {
     totalBtuLoad,
