@@ -175,14 +175,14 @@ const App: React.FC = () => {
             
             <div className="space-y-4 max-w-2xl">
               <div className="inline-block bg-[#7A1C2D] text-white px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] mb-2">
-                Prototype Model A
+                US Cellar Systems, BTU Estimation Calculator
               </div>
               <h1 className="text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-black text-[#333333] uppercase tracking-tight font-montserrat leading-tight">
                 Cellar BTU Load Calculator <br className="hidden md:block"/> & Product Recommendations
               </h1>
               <div className="pt-2">
-                <a href="tel:562-728-5700" className="inline-flex items-center gap-2.5 bg-[#333333] text-white px-6 py-4 rounded-none font-black text-[11px] uppercase tracking-widest hover:bg-black transition-all shadow-md group">
-                  <PhoneCall className="w-4 h-4 group-hover:animate-bounce" /> Technical Support: 562.728.5700
+                <a href="tel:562-513-3017" className="inline-flex items-center gap-2.5 bg-[#333333] text-white px-6 py-4 rounded-none font-black text-[11px] uppercase tracking-widest hover:bg-black transition-all shadow-md group">
+                  <PhoneCall className="w-4 h-4 group-hover:animate-bounce" /> Technical Support: +1 (562) 513.3017
                 </a>
               </div>
             </div>
@@ -449,8 +449,8 @@ const App: React.FC = () => {
                       For L-shaped, triangular, or irregular rooms, please contact USCS for a personalized load calculation.
                     </p>
                     <div className="pt-2">
-                      <a href="tel:562-728-5700" className="inline-flex items-center gap-2 text-[#7A1C2D] font-black text-[12px] uppercase tracking-widest hover:underline">
-                        <PhoneCall className="w-3.5 h-3.5" /> Technical Support: 562.728.5700
+                      <a href="tel:+1562-513-3017" className="inline-flex items-center gap-2 text-[#7A1C2D] font-black text-[12px] uppercase tracking-widest hover:underline">
+                        <PhoneCall className="w-3.5 h-3.5" /> Technical Support: +1 (562) 513.3017
                       </a>
                     </div>
                   </div>
@@ -761,8 +761,8 @@ const App: React.FC = () => {
                 <h4 className="text-3xl md:text-5xl font-black text-[#333333] uppercase tracking-tighter font-montserrat leading-tight">Extreme Capacity Required</h4>
                 <p className="mt-8 text-xl font-bold text-slate-500 italic uppercase tracking-widest">Please request a call for system selection.</p>
                 <div className="mt-16">
-                  <a href="tel:562-728-5700" className="inline-flex items-center gap-6 bg-[#7A1C2D] text-white px-20 py-8 rounded-full font-black uppercase tracking-[0.5em] text-[12px] hover:bg-[#962137] transition-all shadow-2xl font-montserrat">
-                    <PhoneCall className="w-8 h-8" /> 562.728.5700 Direct Engineering
+                  <a href="tel:+1562-513-3017" className="inline-flex items-center gap-6 bg-[#7A1C2D] text-white px-20 py-8 rounded-full font-black uppercase tracking-[0.5em] text-[12px] hover:bg-[#962137] transition-all shadow-2xl font-montserrat">
+                    <PhoneCall className="w-8 h-8" /> +1 (562) 513.3017 Direct Engineering
                   </a>
                 </div>
               </div>
