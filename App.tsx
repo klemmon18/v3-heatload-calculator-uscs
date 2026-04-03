@@ -851,13 +851,13 @@ const App: React.FC = () => {
              <div className="bg-white/5 p-10 rounded-none border border-white/10 max-w-md text-right mt-16 shadow-2xl">
                 <h6 className="text-[11px] font-black text-white/40 uppercase tracking-widest mb-4 font-montserrat">Engineering Notice</h6>
                 <p className="text-[10px] text-slate-400 italic leading-loose font-bold uppercase tracking-widest">
-                  US Cellar Systems assumes no liability for undersizing based on unverified environmental variables.
+                  US Cellar Systems assumes no liability for undersizing based on unverified environmental variables. Also confirm actual calculations with a wine cellar cooling specialist.
                 </p>
              </div>
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 mt-32 pt-16 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 font-montserrat">
-          <p className="text-[11px] text-white/20 font-black uppercase tracking-[0.5em]">© 2024 US Cellar Systems — Version 4.0 Professional Load Engine</p>
+          <p className="text-[11px] text-white/20 font-black uppercase tracking-[0.5em]">© 2026 US Cellar Systems — Version 4.0 Professional Load Engine</p>
           <div className="flex gap-6">
              <div className="w-3 h-3 rounded-none bg-[#7A1C2D] shadow-[0_0_20px_#7A1C2D]"></div>
              <span className="text-[11px] font-black text-white/20 uppercase tracking-widest">Core Engine Active</span>
