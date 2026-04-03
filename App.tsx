@@ -851,7 +851,7 @@ const App: React.FC = () => {
              <div className="bg-white/5 p-10 rounded-none border border-white/10 max-w-md text-right mt-16 shadow-2xl">
                 <h6 className="text-[11px] font-black text-white/40 uppercase tracking-widest mb-4 font-montserrat">Engineering Notice</h6>
                 <p className="text-[10px] text-slate-400 italic leading-loose font-bold uppercase tracking-widest">
-                  US Cellar Systems assumes no liability for undersizing based on unverified environmental variables. Also confirm actual calculations with a wine cellar cooling specialist.
+                  US Cellar Systems assumes no liability for undersizing based on unverified environmental variables. Always confirm actual calculations with a wine cellar cooling specialist.
                 </p>
              </div>
           </div>
