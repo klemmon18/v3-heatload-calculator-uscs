@@ -110,6 +110,11 @@ const App: React.FC = () => {
     setInfoConfirmed(false);
   };
 
+  const parseNumberInput = (value: string) => {
+    if (value === '') return 0;
+    return Number(value.replace(/^0+(?=\d)/, ''));
+  };
+
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-[#333333] font-sans selection:bg-[#7A1C2D] selection:text-white pb-20">
       {/* Disclaimer Modal */}
@@ -175,14 +180,14 @@ const App: React.FC = () => {
             
             <div className="space-y-4 max-w-2xl">
               <div className="inline-block bg-[#7A1C2D] text-white px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] mb-2">
-                US Cellar Systems, BTU Estimation Calculator
+                Prototype Model A
               </div>
               <h1 className="text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-black text-[#333333] uppercase tracking-tight font-montserrat leading-tight">
                 Cellar BTU Load Calculator <br className="hidden md:block"/> & Product Recommendations
               </h1>
               <div className="pt-2">
-                <a href="tel:562-513-3017" className="inline-flex items-center gap-2.5 bg-[#333333] text-white px-6 py-4 rounded-none font-black text-[11px] uppercase tracking-widest hover:bg-black transition-all shadow-md group">
-                  <PhoneCall className="w-4 h-4 group-hover:animate-bounce" /> Technical Support: +1 (562) 513.3017
+                <a href="tel:562-728-5700" className="inline-flex items-center gap-2.5 bg-[#333333] text-white px-6 py-4 rounded-none font-black text-[11px] uppercase tracking-widest hover:bg-black transition-all shadow-md group">
+                  <PhoneCall className="w-4 h-4 group-hover:animate-bounce" /> Technical Support: 562.728.5700
                 </a>
               </div>
             </div>
@@ -352,10 +357,22 @@ const App: React.FC = () => {
                           <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             {s.type === 'Wall' ? 'Dimensions (ft)' : 'ROOM FOOTPRINT DIMENSIONS (FT)'}
                           </label>
-                          <div className="flex items-center gap-3">
-                            <input type="number" value={s.width} onChange={(e) => updateSurface(s.id, 'width', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3.5 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none" />
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              value={s.width === 0 ? '' : s.width}
+                              onChange={(e) => updateSurface(s.id, 'width', parseNumberInput(e.target.value))}
+                              onFocus={(e) => e.target.select()}
+                              className="flex-1 min-w-0 bg-white border border-slate-200 rounded-none px-2 py-3.5 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
                             <span className="text-slate-300 font-bold">×</span>
-                            <input type="number" value={s.height} onChange={(e) => updateSurface(s.id, 'height', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3.5 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none" />
+                            <input
+                              type="number"
+                              value={s.height === 0 ? '' : s.height}
+                              onChange={(e) => updateSurface(s.id, 'height', parseNumberInput(e.target.value))}
+                              onFocus={(e) => e.target.select()}
+                              className="flex-1 min-w-0 bg-white border border-slate-200 rounded-none px-2 py-3.5 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
                           </div>
                         </div>
                         
@@ -365,11 +382,23 @@ const App: React.FC = () => {
                             <div className="space-y-4">
                               <div>
                                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Shortest Height (ft)</label>
-                                <input type="number" value={s.minHeight} onChange={(e) => updateSurface(s.id, 'minHeight', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none" />
+                                <input
+                                  type="number"
+                                  value={s.minHeight === 0 ? '' : s.minHeight}
+                                  onChange={(e) => updateSurface(s.id, 'minHeight', parseNumberInput(e.target.value))}
+                                  onFocus={(e) => e.target.select()}
+                                  className="w-full bg-white border border-slate-200 rounded-none px-2 py-3 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tallest Height (ft)</label>
-                                <input type="number" value={s.maxHeight} onChange={(e) => updateSurface(s.id, 'maxHeight', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none" />
+                                <input
+                                  type="number"
+                                  value={s.maxHeight === 0 ? '' : s.maxHeight}
+                                  onChange={(e) => updateSurface(s.id, 'maxHeight', parseNumberInput(e.target.value))}
+                                  onFocus={(e) => e.target.select()}
+                                  className="w-full bg-white border border-slate-200 rounded-none px-2 py-3 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
                               </div>
                             </div>
                           ) : (
@@ -393,15 +422,29 @@ const App: React.FC = () => {
                       <div className="grid grid-cols-2 gap-6 pt-2">
                         <div className={`space-y-2 transition-all ${s.glassType !== GlassType.None ? 'opacity-100' : 'opacity-25 pointer-events-none'}`}>
                           <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Glass Dimensions (ft)</label>
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 min-w-0">
                               <span className="text-[8px] font-bold text-slate-300 block mb-1">W</span>
-                              <input type="number" value={s.glassWidth} onChange={(e) => updateSurface(s.id, 'glassWidth', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-3 py-2 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none" disabled={s.glassType === GlassType.None} />
+                              <input
+                                type="number"
+                                value={s.glassWidth === 0 ? '' : s.glassWidth}
+                                onChange={(e) => updateSurface(s.id, 'glassWidth', parseNumberInput(e.target.value))}
+                                onFocus={(e) => e.target.select()}
+                                className="w-full bg-white border border-slate-200 rounded-none px-2 py-2.5 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                disabled={s.glassType === GlassType.None}
+                              />
                             </div>
                             <span className="text-slate-300 font-bold mt-4">×</span>
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               <span className="text-[8px] font-bold text-slate-300 block mb-1">H</span>
-                              <input type="number" value={s.glassHeight} onChange={(e) => updateSurface(s.id, 'glassHeight', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-3 py-2 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none" disabled={s.glassType === GlassType.None} />
+                              <input
+                                type="number"
+                                value={s.glassHeight === 0 ? '' : s.glassHeight}
+                                onChange={(e) => updateSurface(s.id, 'glassHeight', parseNumberInput(e.target.value))}
+                                onFocus={(e) => e.target.select()}
+                                className="w-full bg-white border border-slate-200 rounded-none px-2 py-2.5 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                disabled={s.glassType === GlassType.None}
+                              />
                             </div>
                           </div>
                           {s.glassType !== GlassType.None && (
@@ -449,8 +492,8 @@ const App: React.FC = () => {
                       For L-shaped, triangular, or irregular rooms, please contact USCS for a personalized load calculation.
                     </p>
                     <div className="pt-2">
-                      <a href="tel:+1562-513-3017" className="inline-flex items-center gap-2 text-[#7A1C2D] font-black text-[12px] uppercase tracking-widest hover:underline">
-                        <PhoneCall className="w-3.5 h-3.5" /> Technical Support: +1 (562) 513.3017
+                      <a href="tel:562-728-5700" className="inline-flex items-center gap-2 text-[#7A1C2D] font-black text-[12px] uppercase tracking-widest hover:underline">
+                        <PhoneCall className="w-3.5 h-3.5" /> Technical Support: 562.728.5700
                       </a>
                     </div>
                   </div>
@@ -761,8 +804,8 @@ const App: React.FC = () => {
                 <h4 className="text-3xl md:text-5xl font-black text-[#333333] uppercase tracking-tighter font-montserrat leading-tight">Extreme Capacity Required</h4>
                 <p className="mt-8 text-xl font-bold text-slate-500 italic uppercase tracking-widest">Please request a call for system selection.</p>
                 <div className="mt-16">
-                  <a href="tel:+1562-513-3017" className="inline-flex items-center gap-6 bg-[#7A1C2D] text-white px-20 py-8 rounded-full font-black uppercase tracking-[0.5em] text-[12px] hover:bg-[#962137] transition-all shadow-2xl font-montserrat">
-                    <PhoneCall className="w-8 h-8" /> +1 (562) 513.3017 Direct Engineering
+                  <a href="tel:562-728-5700" className="inline-flex items-center gap-6 bg-[#7A1C2D] text-white px-20 py-8 rounded-full font-black uppercase tracking-[0.5em] text-[12px] hover:bg-[#962137] transition-all shadow-2xl font-montserrat">
+                    <PhoneCall className="w-8 h-8" /> 562.728.5700 Direct Engineering
                   </a>
                 </div>
               </div>
@@ -851,13 +894,13 @@ const App: React.FC = () => {
              <div className="bg-white/5 p-10 rounded-none border border-white/10 max-w-md text-right mt-16 shadow-2xl">
                 <h6 className="text-[11px] font-black text-white/40 uppercase tracking-widest mb-4 font-montserrat">Engineering Notice</h6>
                 <p className="text-[10px] text-slate-400 italic leading-loose font-bold uppercase tracking-widest">
-                  US Cellar Systems assumes no liability for undersizing based on unverified environmental variables. Always confirm actual calculations with a wine cellar cooling specialist.
+                  US Cellar Systems assumes no liability for undersizing based on unverified environmental variables.
                 </p>
              </div>
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 mt-32 pt-16 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 font-montserrat">
-          <p className="text-[11px] text-white/20 font-black uppercase tracking-[0.5em]">© 2026 US Cellar Systems — Version 4.0 Professional Load Engine</p>
+          <p className="text-[11px] text-white/20 font-black uppercase tracking-[0.5em]">© 2024 US Cellar Systems — Version 4.0 Professional Load Engine</p>
           <div className="flex gap-6">
              <div className="w-3 h-3 rounded-none bg-[#7A1C2D] shadow-[0_0_20px_#7A1C2D]"></div>
              <span className="text-[11px] font-black text-white/20 uppercase tracking-widest">Core Engine Active</span>
