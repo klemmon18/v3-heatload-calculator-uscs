@@ -430,7 +430,7 @@ const App: React.FC = () => {
                                 value={s.glassWidth === 0 ? '' : s.glassWidth}
                                 onChange={(e) => updateSurface(s.id, 'glassWidth', parseNumberInput(e.target.value))}
                                 onFocus={(e) => e.target.select()}
-                                className="w-full bg-white border border-slate-200 rounded-none px-3 py-2.5 text-[16px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="w-[64px] bg-white border border-slate-200 rounded-none px-3 py-2.5 text-[16px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 disabled={s.glassType === GlassType.None}
                               />
                             </div>
