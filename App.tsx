@@ -422,8 +422,8 @@ const App: React.FC = () => {
                       <div className="grid grid-cols-2 gap-6 pt-2">
                         <div className={`space-y-2 transition-all ${s.glassType !== GlassType.None ? 'opacity-100' : 'opacity-25 pointer-events-none'}`}>
                           <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Glass Dimensions (ft)</label>
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-[64px] bg-white border border-slate-200 px-2 py-3 text-sm font-bold text-left tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                               <span className="text-[8px] font-bold text-slate-300 block mb-1">W</span>
                               <input
                                 type="number"
