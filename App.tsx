@@ -352,55 +352,83 @@ const App: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            {s.type === 'Wall' ? 'Dimensions (ft)' : 'ROOM FOOTPRINT DIMENSIONS (FT)'}
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              value={s.width === 0 ? '' : s.width}
-                              onChange={(e) => updateSurface(s.id, 'width', parseNumberInput(e.target.value))}
-                              onFocus={(e) => e.target.select()}
-                              className="w-[84px] shrink-0 bg-white border border-slate-200 rounded-none px-3 py-3.5 text-[18px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                            <span className="text-slate-300 font-bold">×</span>
-                            <input
-                              type="number"
-                              value={s.height === 0 ? '' : s.height}
-                              onChange={(e) => updateSurface(s.id, 'height', parseNumberInput(e.target.value))}
-                              onFocus={(e) => e.target.select()}
-                              className="w-[84px] shrink-0 bg-white border border-slate-200 rounded-none px-3 py-3.5 text-[18px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                          </div>
-                        </div>
-                        
-                        {/* Height logic for Vaulted or Standard Ceiling */}
-                        <div className="space-y-2">
-                          {s.type === 'Ceiling' && s.isVaulted ? (
-                            <div className="space-y-4">
-                              <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Shortest Height (ft)</label>
-                                <input
-                                  type="number"
-                                  value={s.minHeight === 0 ? '' : s.minHeight}
-                                  onChange={(e) => updateSurface(s.id, 'minHeight', parseNumberInput(e.target.value))}
-                                  onFocus={(e) => e.target.select()}
-                                  className="w-full bg-white border border-slate-200 rounded-none px-3 py-3 text-[18px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tallest Height (ft)</label>
-                                <input
-                                  type="number"
-                                  value={s.maxHeight === 0 ? '' : s.maxHeight}
-                                  onChange={(e) => updateSurface(s.id, 'maxHeight', parseNumberInput(e.target.value))}
-                                  onFocus={(e) => e.target.select()}
-                                  className="w-full bg-white border border-slate-200 rounded-none px-3 py-3 text-[18px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                />
-                              </div>
-                            </div>
+                      <div className="grid grid-cols-[150px_minmax(0,1fr)] gap-4 items-end">
+  <div className="space-y-2">
+    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
+      {s.type === 'Wall' ? 'Dimensions (ft)' : 'ROOM FOOTPRINT DIMENSIONS (FT)'}
+    </label>
+
+    <div className="flex items-center gap-1.5">
+      <input
+        type="number"
+        value={s.width === 0 ? '' : s.width}
+        onChange={(e) => updateSurface(s.id, 'width', parseNumberInput(e.target.value))}
+        onFocus={(e) => e.target.select()}
+        className="w-[56px] bg-white border border-slate-200 rounded-none px-2 py-3 text-sm font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      />
+      <span className="text-slate-300 font-bold">×</span>
+      <input
+        type="number"
+        value={s.height === 0 ? '' : s.height}
+        onChange={(e) => updateSurface(s.id, 'height', parseNumberInput(e.target.value))}
+        onFocus={(e) => e.target.select()}
+        className="w-[56px] bg-white border border-slate-200 rounded-none px-2 py-3 text-sm font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      />
+    </div>
+  </div>
+
+  {/* Height logic for Vaulted or Standard Ceiling */}
+  <div className="space-y-2 min-w-0">
+    {s.type === 'Ceiling' && s.isVaulted ? (
+      <div className="space-y-4">
+        <div>
+          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+            Shortest Height (ft)
+          </label>
+          <input
+            type="number"
+            value={s.minHeight === 0 ? '' : s.minHeight}
+            onChange={(e) => updateSurface(s.id, 'minHeight', parseNumberInput(e.target.value))}
+            onFocus={(e) => e.target.select()}
+            className="w-full bg-white border border-slate-200 rounded-none px-3 py-3 text-sm font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+            Tallest Height (ft)
+          </label>
+          <input
+            type="number"
+            value={s.maxHeight === 0 ? '' : s.maxHeight}
+            onChange={(e) => updateSurface(s.id, 'maxHeight', parseNumberInput(e.target.value))}
+            onFocus={(e) => e.target.select()}
+            className="w-full bg-white border border-slate-200 rounded-none px-3 py-3 text-sm font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+        </div>
+      </div>
+    ) : (
+      <div className="space-y-2">
+        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          Insulation
+        </label>
+        <div className="relative">
+          <select
+            value={s.rValue}
+            onChange={(e) => updateSurface(s.id, 'rValue', Number(e.target.value))}
+            className="w-full bg-white border border-slate-200 rounded-none px-4 py-3.5 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none appearance-none pr-10"
+          >
+            {Object.values(InsulationRValue).filter(v => typeof v === 'number').map(v => (
+              <option key={v} value={v}>
+                {v === 0 ? 'None (No Insulation)' : `R-${v}`}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+        </div>
+      </div>
+    )}
+  </div>
+</div>
                           ) : (
                             <div className="space-y-2">
                               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Insulation</label>
