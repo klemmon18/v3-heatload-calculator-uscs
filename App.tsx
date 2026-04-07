@@ -363,7 +363,7 @@ const App: React.FC = () => {
                               value={s.width === 0 ? '' : s.width}
                               onChange={(e) => updateSurface(s.id, 'width', parseNumberInput(e.target.value))}
                               onFocus={(e) => e.target.select()}
-                              className="flex-1 min-w-0 bg-white border border-slate-200 rounded-none px-2 py-3.5 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              className="w-[84px] shrink-0 bg-white border border-slate-200 rounded-none px-3 py-3.5 text-[18px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span className="text-slate-300 font-bold">×</span>
                             <input
@@ -371,7 +371,7 @@ const App: React.FC = () => {
                               value={s.height === 0 ? '' : s.height}
                               onChange={(e) => updateSurface(s.id, 'height', parseNumberInput(e.target.value))}
                               onFocus={(e) => e.target.select()}
-                              className="flex-1 min-w-0 bg-white border border-slate-200 rounded-none px-2 py-3.5 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              className="w-[84px] shrink-0 bg-white border border-slate-200 rounded-none px-3 py-3.5 text-[18px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                           </div>
                         </div>
@@ -387,7 +387,7 @@ const App: React.FC = () => {
                                   value={s.minHeight === 0 ? '' : s.minHeight}
                                   onChange={(e) => updateSurface(s.id, 'minHeight', parseNumberInput(e.target.value))}
                                   onFocus={(e) => e.target.select()}
-                                  className="w-full bg-white border border-slate-200 rounded-none px-2 py-3 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                  className="w-full bg-white border border-slate-200 rounded-none px-3 py-3 text-[18px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                               </div>
                               <div>
@@ -397,7 +397,7 @@ const App: React.FC = () => {
                                   value={s.maxHeight === 0 ? '' : s.maxHeight}
                                   onChange={(e) => updateSurface(s.id, 'maxHeight', parseNumberInput(e.target.value))}
                                   onFocus={(e) => e.target.select()}
-                                  className="w-full bg-white border border-slate-200 rounded-none px-2 py-3 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                  className="w-full bg-white border border-slate-200 rounded-none px-3 py-3 text-[18px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                               </div>
                             </div>
@@ -430,7 +430,7 @@ const App: React.FC = () => {
                                 value={s.glassWidth === 0 ? '' : s.glassWidth}
                                 onChange={(e) => updateSurface(s.id, 'glassWidth', parseNumberInput(e.target.value))}
                                 onFocus={(e) => e.target.select()}
-                                className="w-full bg-white border border-slate-200 rounded-none px-2 py-2.5 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="w-full bg-white border border-slate-200 rounded-none px-3 py-2.5 text-[16px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 disabled={s.glassType === GlassType.None}
                               />
                             </div>
@@ -442,7 +442,7 @@ const App: React.FC = () => {
                                 value={s.glassHeight === 0 ? '' : s.glassHeight}
                                 onChange={(e) => updateSurface(s.id, 'glassHeight', parseNumberInput(e.target.value))}
                                 onFocus={(e) => e.target.select()}
-                                className="w-full bg-white border border-slate-200 rounded-none px-2 py-2.5 text-base font-bold text-center tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="w-full bg-white border border-slate-200 rounded-none px-3 py-2.5 text-[16px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 disabled={s.glassType === GlassType.None}
                               />
                             </div>
