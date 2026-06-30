@@ -1,4 +1,3 @@
-
 export enum InsulationRValue {
   None = 0,
   R11 = 11,
@@ -15,6 +14,14 @@ export enum GlassType {
   DoublePane = 'Double Pane'
 }
 
+export enum DoorType {
+  HollowCore = 'Hollow Core',
+  SolidCore = 'Solid Core',
+  Insulated = 'Insulated',
+  GlassSinglePane = 'Glass Door - Single Pane',
+  GlassDoublePane = 'Glass Door - Double Pane'
+}
+
 export type SurfaceType = 'Wall' | 'Ceiling' | 'Floor';
 
 export interface SurfaceInput {
@@ -29,10 +36,19 @@ export interface SurfaceInput {
   glassWidth: number;
   glassHeight: number;
   glassType: GlassType;
+
+  // Door support - wall specific
+  hasDoor?: boolean;
+  doorWidth?: number;
+  doorHeight?: number;
+  doorCount?: number;
+  doorType?: DoorType;
+
   // Vaulted support
   isVaulted?: boolean;
   minHeight?: number;
   maxHeight?: number;
+
   // Floor specific
   isRadiantFloor?: boolean;
 }
@@ -46,8 +62,8 @@ export interface UsageFactors {
   ledHours: number;
   incandescentWatts: number;
   incandescentHours: number;
-  ambientTemp: number; // Adjacent interior temp
-  outdoorTemp: number; // Outdoor design temp
+  ambientTemp: number;
+  outdoorTemp: number;
   targetTemp: number;
   frequentDoorOpening?: boolean;
   equipmentWatts?: number;
@@ -71,6 +87,7 @@ export interface CalculationResult {
     qCeiling: number;
     qFloor: number;
     qGlass: number;
+    qDoors: number;
     qSun: number;
     qPeople: number;
     qAppliances: number;
