@@ -83,25 +83,36 @@ const App: React.FC = () => {
   }, [result.totalBtuLoad, isCalculable, infoConfirmed]);
 
   const updateSurface = (id: string, field: keyof SurfaceInput, value: any) => {
-    if (infoConfirmed) setInfoConfirmed(false);
+  if (infoConfirmed) setInfoConfirmed(false);
 
-    setSurfaces(surfaces.map(s => {
-      if (s.id === id) {
-        let finalValue = value;
-        
-        if (['width', 'height', 'minHeight', 'maxHeight', 'glassWidth', 'glassHeight'].includes(field as string)) {
-          const numVal = Number(value);
-          if (numVal < 0) finalValue = 0;
-          if (numVal > 1000) finalValue = 1000; 
-        }
+  setSurfaces(surfaces.map(s => {
+    if (s.id === id) {
+      let finalValue = value;
+      
+      if ([
+        'width',
+        'height',
+        'minHeight',
+        'maxHeight',
+        'glassWidth',
+        'glassHeight',
+        'doorWidth',
+        'doorHeight'
+      ].includes(field as string)) {
+        const numVal = Number(value);
+        finalValue = Number.isNaN(numVal) ? 0 : numVal;
 
-        const updated = { ...s, [field]: finalValue };
-        
-        return updated;
+        if (finalValue < 0) finalValue = 0;
+        if (finalValue > 1000) finalValue = 1000; 
       }
-      return s;
-    }));
-  };
+
+      const updated = { ...s, [field]: finalValue };
+      
+      return updated;
+    }
+    return s;
+  }));
+};
 
   const handleVaporBarrierChange = (val: 'yes' | 'no') => {
     setVaporBarrier(val);
