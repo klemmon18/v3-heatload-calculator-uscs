@@ -482,6 +482,92 @@ const App: React.FC = () => {
                               Contains a Door
                             </span>
                           </label>
+
+                         {s.hasDoor && (
+                        <div className="mt-3 ml-8">
+                      
+                          <div className="grid grid-cols-2 gap-6">
+                      
+                            {/* Door Dimensions */}
+                      
+                            <div>
+                      
+                              <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                                Door Dimensions (ft)
+                              </label>
+                      
+                              <div className="flex items-center gap-2">
+                      
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={s.doorWidth}
+                                  onChange={(e) =>
+                                    updateSurface(s.id, "doorWidth", Number(e.target.value))
+                                  }
+                                  className="w-16 h-14 border border-slate-200 px-3 text-left font-black text-2xl text-slate-800"
+                                />
+                      
+                                <span className="text-slate-300 text-xl">×</span>
+                      
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={s.doorHeight}
+                                  onChange={(e) =>
+                                    updateSurface(s.id, "doorHeight", Number(e.target.value))
+                                  }
+                                  className="w-16 h-14 border border-slate-200 px-3 text-left font-black text-2xl text-slate-800"
+                                />
+                      
+                              </div>
+                      
+                            </div>
+                      
+                            {/* Door Material */}
+                      
+                            <div>
+                      
+                              <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                                Door Material
+                              </label>
+                      
+                              <select
+                                value={s.doorType}
+                                onChange={(e) =>
+                                  updateSurface(s.id, "doorType", e.target.value as DoorType)
+                                }
+                                className="w-full h-14 border border-slate-200 px-4 font-black text-lg text-slate-800"
+                              >
+                      
+                                <option value={DoorType.HollowCore}>
+                                  Hollow Core Interior
+                                </option>
+                      
+                                <option value={DoorType.SolidCore}>
+                                  Solid Core Wood
+                                </option>
+                      
+                                <option value={DoorType.Insulated}>
+                                  Insulated Exterior
+                                </option>
+                      
+                                <option value={DoorType.GlassSinglePane}>
+                                  Glass - Single Pane
+                                </option>
+                      
+                                <option value={DoorType.GlassDoublePane}>
+                                  Glass - Double Pane
+                                </option>
+                      
+                              </select>
+                      
+                            </div>
+                      
+                          </div>
+                      
+                        </div>
+                      )} 
                         </div>
                       )}
                       {s.type === 'Ceiling' && s.isVaulted && (
