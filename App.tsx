@@ -479,7 +479,7 @@ const App: React.FC = () => {
                             />
                       
                             <span className="text-[11px] font-black text-slate-600 uppercase tracking-widest">
-                              Door on this wall
+                              Contains a Door
                             </span>
                           </label>
                         </div>
