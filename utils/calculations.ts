@@ -14,6 +14,8 @@ export const calculateUSCSLoad = (
   let qFloor_day = 0;
   let qGlass_day = 0;
   let qSun_day = 0;
+  let qDoors_day = 0;
+  let qAppliances_day = 0;
 
   // Track for glass dampening
   let totalWallArea = 0;
@@ -113,9 +115,11 @@ export const calculateUSCSLoad = (
     (usage.ledWatts * 3.412 * usage.ledHours) +
     (usage.incandescentWatts * 3.412 * usage.incandescentHours);
 
+  const qAppliances_day =
+    usage.applianceWatts * 3.412 * usage.applianceHours;
+  
   const qExtra_day =
-    (usage.applianceWatts * 3.412 * usage.applianceHours) +
-    ((usage.equipmentWatts || 0) * 3.412 * (usage.equipmentHours || 0));
+    (usage.equipmentWatts || 0) * 3.412 * (usage.equipmentHours || 0);
 
   // === AIR LOAD ===
   const doorModifier = usage.frequentDoorOpening ? 1.25 : 1.0;
@@ -149,18 +153,20 @@ export const calculateUSCSLoad = (
 
   return {
     totalBtuLoad,
-    breakdown: {
-      qWalls: Math.round(qWalls_day),
-      qCeiling: Math.round(qCeiling_day),
-      qFloor: Math.round(qFloor_day),
-      qGlass: Math.round(qGlass_day),
-      qSun: Math.round(qSun_day),
-      qPeople: Math.round(qPeople_day),
-      qLighting: Math.round(qLighting_day),
-      qAir: Math.round(qAir_day),
-      qExtra: Math.round(qExtra_day),
-      qSafety: Math.round(qSafety_day)
-    },
+  breakdown: {
+    qWalls: Math.round(qWalls_day),
+    qCeiling: Math.round(qCeiling_day),
+    qFloor: Math.round(qFloor_day),
+    qGlass: Math.round(qGlass_day),
+    qDoors: Math.round(qDoors_day),
+    qSun: Math.round(qSun_day),
+    qPeople: Math.round(qPeople_day),
+    qAppliances: Math.round(qAppliances_day),
+    qLighting: Math.round(qLighting_day),
+    qAir: Math.round(qAir_day),
+    qExtra: Math.round(qExtra_day),
+    qSafety: Math.round(qSafety_day)
+  }
     volume: Math.round(volume)
   };
 };
