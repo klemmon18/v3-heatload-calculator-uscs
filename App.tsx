@@ -467,7 +467,7 @@ const App: React.FC = () => {
 
                       {/* Door Section */}
                       {s.type === 'Wall' && (
-                        <div className="pt-4 border-t border-slate-200 mt-2">
+                        <div className="pt-2 border-t border-slate-200 mt-1">
                           <label className="flex items-center gap-3 cursor-pointer">
                             <input
                               type="checkbox"
