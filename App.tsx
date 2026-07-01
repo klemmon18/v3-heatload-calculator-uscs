@@ -127,6 +127,7 @@ const App: React.FC = () => {
     return Number(value.replace(/^0+(?=\d)/, ''));
   };
 
+  console.log(result.breakdown);
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-[#333333] font-sans selection:bg-[#7A1C2D] selection:text-white pb-20">
       {/* Disclaimer Modal */}
