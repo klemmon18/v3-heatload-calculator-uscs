@@ -464,7 +464,26 @@ const App: React.FC = () => {
                           </div>
                         </div>
                       </div>
+
+                      {/* Door Section */}
+                      {s.type === 'Wall' && (
+                        <div className="pt-4 border-t border-slate-200 mt-2">
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={!!s.hasDoor}
+                              onChange={(e) =>
+                                updateSurface(s.id, "hasDoor", e.target.checked)
+                              }
+                              className="w-5 h-5 rounded-none border-slate-300 text-[#7A1C2D] focus:ring-[#7A1C2D]"
+                            />
                       
+                            <span className="text-[11px] font-black text-slate-600 uppercase tracking-widest">
+                              Door on this wall
+                            </span>
+                          </label>
+                        </div>
+                      )}
                       {s.type === 'Ceiling' && s.isVaulted && (
                          <div className="space-y-2">
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Insulation</label>
