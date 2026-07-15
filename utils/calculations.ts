@@ -1,4 +1,4 @@
-import { SurfaceInput, UsageFactors, CalculationResult, GlassType } from '../types';
+import { SurfaceInput, UsageFactors, CalculationResult, GlassType, DoorMaterial } from '../types';
 
 export const calculateUSCSLoad = (
   surfaces: SurfaceInput[],
@@ -13,6 +13,7 @@ export const calculateUSCSLoad = (
   let qCeiling_day = 0;
   let qFloor_day = 0;
   let qGlass_day = 0;
+  let qDoors_day = 0;
   let qSun_day = 0;
 
   // Track for glass dampening
@@ -22,6 +23,13 @@ export const calculateUSCSLoad = (
   // === CONSTANTS ===
   const FACTOR_GLASS_SINGLE = 28.0;
   const FACTOR_GLASS_DOUBLE = 15.0;
+
+  // Door factors are daily conduction factors (approximately 24 × U-value).
+  const FACTOR_DOOR_HOLLOW_CORE = 18.0;
+  const FACTOR_DOOR_SOLID_CORE = 12.0;
+  const FACTOR_DOOR_INSULATED = 7.0;
+  const FACTOR_DOOR_GLASS_SINGLE = FACTOR_GLASS_SINGLE;
+  const FACTOR_DOOR_GLASS_DOUBLE = FACTOR_GLASS_DOUBLE;
   const FACTOR_FLOOR = 0.25;
   const FACTOR_AIR = 0.072;
   const COMPRESSOR_RUNTIME = 16;
@@ -55,7 +63,17 @@ export const calculateUSCSLoad = (
     const actualGlassArea =
       s.glassType === GlassType.None ? 0 : Math.min(totalArea, computedGlassArea);
 
-    const wallArea = Math.max(0, totalArea - actualGlassArea);
+    // Doors are wall-specific. Cap door area to the remaining wall area
+    // after glass so openings can never exceed the wall surface.
+    const computedDoorArea =
+      s.type === 'Wall' && s.hasDoor
+        ? (s.doorWidth || 0) * (s.doorHeight || 0)
+        : 0;
+
+    const availableAreaAfterGlass = Math.max(0, totalArea - actualGlassArea);
+    const actualDoorArea = Math.min(availableAreaAfterGlass, computedDoorArea);
+
+    const wallArea = Math.max(0, totalArea - actualGlassArea - actualDoorArea);
 
     // Track totals for dampener
     if (s.type === 'Wall') {
@@ -89,6 +107,32 @@ export const calculateUSCSLoad = (
           : FACTOR_GLASS_SINGLE;
 
       qGlass_day += actualGlassArea * deltaT * factor;
+    }
+
+    // === DOORS ===
+    if (s.type === 'Wall' && s.hasDoor && actualDoorArea > 0) {
+      let doorFactor = FACTOR_DOOR_SOLID_CORE;
+
+      switch (s.doorMaterial) {
+        case DoorMaterial.HollowCore:
+          doorFactor = FACTOR_DOOR_HOLLOW_CORE;
+          break;
+        case DoorMaterial.Insulated:
+          doorFactor = FACTOR_DOOR_INSULATED;
+          break;
+        case DoorMaterial.GlassSinglePane:
+          doorFactor = FACTOR_DOOR_GLASS_SINGLE;
+          break;
+        case DoorMaterial.GlassDoublePane:
+          doorFactor = FACTOR_DOOR_GLASS_DOUBLE;
+          break;
+        case DoorMaterial.SolidCore:
+        default:
+          doorFactor = FACTOR_DOOR_SOLID_CORE;
+          break;
+      }
+
+      qDoors_day += actualDoorArea * deltaT * doorFactor;
     }
 
     // === SUN LOAD ===
@@ -127,6 +171,7 @@ export const calculateUSCSLoad = (
     qCeiling_day +
     qFloor_day +
     qGlass_day +
+    qDoors_day +
     qSun_day +
     qPeople_day +
     qLighting_day +
@@ -154,6 +199,7 @@ export const calculateUSCSLoad = (
       qCeiling: Math.round(qCeiling_day),
       qFloor: Math.round(qFloor_day),
       qGlass: Math.round(qGlass_day),
+      qDoors: Math.round(qDoors_day),
       qSun: Math.round(qSun_day),
       qPeople: Math.round(qPeople_day),
       qLighting: Math.round(qLighting_day),
