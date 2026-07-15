@@ -14,48 +14,24 @@ export enum GlassType {
   DoublePane = 'Double Pane'
 }
 
-/*
- * Door materials
- * (Displayed in the UI as "Door Material")
- */
-export enum DoorMaterial {
-  HollowCore = 'Hollow Core Interior',
-  SolidCore = 'Solid Core Wood',
-  Insulated = 'Insulated Exterior',
-  GlassSinglePane = 'Glass - Single Pane',
-  GlassDoublePane = 'Glass - Double Pane'
-}
-
 export type SurfaceType = 'Wall' | 'Ceiling' | 'Floor';
 
 export interface SurfaceInput {
   id: string;
   name: string;
   type: SurfaceType;
-
   width: number;
   height: number;
-
   rValue: InsulationRValue;
-
   isExterior: boolean;
   sunExposed: boolean;
-
   glassWidth: number;
   glassHeight: number;
   glassType: GlassType;
-
-  /* Door properties */
-  hasDoor?: boolean;
-  doorWidth?: number;
-  doorHeight?: number;
-  doorMaterial?: DoorMaterial;
-
   // Vaulted support
   isVaulted?: boolean;
   minHeight?: number;
   maxHeight?: number;
-
   // Floor specific
   isRadiantFloor?: boolean;
 }
@@ -63,22 +39,16 @@ export interface SurfaceInput {
 export interface UsageFactors {
   peopleCount: number;
   peopleHours: number;
-
   applianceWatts: number;
   applianceHours: number;
-
   ledWatts: number;
   ledHours: number;
-
   incandescentWatts: number;
   incandescentHours: number;
-
-  ambientTemp: number;
-  outdoorTemp: number;
+  ambientTemp: number; // Adjacent interior temp
+  outdoorTemp: number; // Outdoor design temp
   targetTemp: number;
-
   frequentDoorOpening?: boolean;
-
   equipmentWatts?: number;
   equipmentHours?: number;
 }
@@ -95,21 +65,17 @@ export interface Product {
 
 export interface CalculationResult {
   totalBtuLoad: number;
-
   breakdown: {
     qWalls: number;
     qCeiling: number;
     qFloor: number;
     qGlass: number;
-    qDoors: number;
     qSun: number;
     qPeople: number;
-    qAppliances: number;
     qLighting: number;
     qAir: number;
     qExtra: number;
     qSafety: number;
   };
-
   volume: number;
 }
