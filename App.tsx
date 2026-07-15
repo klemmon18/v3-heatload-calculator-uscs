@@ -855,6 +855,14 @@ const App: React.FC = () => {
                         <div className="text-2xl font-black text-[#b30000] tracking-tighter font-montserrat">{Math.round(result.breakdown.qGlass / 16)}</div>
                       </div>
                       <div className="bg-slate-50 p-6 rounded-none border border-slate-100 shadow-sm">
+  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 font-montserrat">
+    Doors
+  </div>
+  <div className="text-2xl font-black text-[#7A1C2D] tracking-tighter font-montserrat">
+    {Math.round(result.breakdown.qDoors / 16)}
+  </div>
+</div>
+                      <div className="bg-slate-50 p-6 rounded-none border border-slate-100 shadow-sm">
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 font-montserrat">Internal</div>
                         <div className="text-2xl font-black text-[#333333] tracking-tighter font-montserrat">
   {Math.round(
