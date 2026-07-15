@@ -26,7 +26,8 @@ import {
   SurfaceInput, 
   UsageFactors, 
   InsulationRValue, 
-  GlassType
+  GlassType,
+  DoorMaterial
 } from './types';
 import { calculateUSCSLoad } from './utils/calculations';
 import { USCS_PRODUCTS } from './constants';
@@ -35,12 +36,74 @@ const LOGO_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAABQBAM
 
 const App: React.FC = () => {
   const [surfaces, setSurfaces] = useState<SurfaceInput[]>([
-    { id: '1', name: 'Wall 1', type: 'Wall', width: 10, height: 8, rValue: InsulationRValue.R19, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None },
-    { id: '2', name: 'Wall 2', type: 'Wall', width: 10, height: 8, rValue: InsulationRValue.R19, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None },
-    { id: '3', name: 'Wall 3', type: 'Wall', width: 8, height: 8, rValue: InsulationRValue.R19, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None },
-    { id: '4', name: 'Wall 4', type: 'Wall', width: 8, height: 8, rValue: InsulationRValue.R19, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None },
-    { id: '5', name: 'Ceiling', type: 'Ceiling', width: 10, height: 8, rValue: InsulationRValue.R30, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None, isVaulted: false, minHeight: 8, maxHeight: 10 },
-    { id: '6', name: 'Floor', type: 'Floor', width: 10, height: 8, rValue: InsulationRValue.None, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None, isRadiantFloor: false },
+    { 
+  id: '1', 
+  name: 'Wall 1', 
+  type: 'Wall', 
+  width: 10, 
+  height: 8, 
+  rValue: InsulationRValue.R19, 
+  isExterior: false, 
+  sunExposed: false, 
+  glassWidth: 0, 
+  glassHeight: 0, 
+  glassType: GlassType.None,
+  hasDoor: false,
+  doorWidth: 3,
+  doorHeight: 7,
+  doorMaterial: DoorMaterial.SolidCore
+},
+{ 
+  id: '2', 
+  name: 'Wall 2', 
+  type: 'Wall', 
+  width: 10, 
+  height: 8, 
+  rValue: InsulationRValue.R19, 
+  isExterior: false, 
+  sunExposed: false, 
+  glassWidth: 0, 
+  glassHeight: 0, 
+  glassType: GlassType.None,
+  hasDoor: false,
+  doorWidth: 3,
+  doorHeight: 7,
+  doorMaterial: DoorMaterial.SolidCore
+},
+{ 
+  id: '3', 
+  name: 'Wall 3', 
+  type: 'Wall', 
+  width: 8, 
+  height: 8, 
+  rValue: InsulationRValue.R19, 
+  isExterior: false, 
+  sunExposed: false, 
+  glassWidth: 0, 
+  glassHeight: 0, 
+  glassType: GlassType.None,
+  hasDoor: false,
+  doorWidth: 3,
+  doorHeight: 7,
+  doorMaterial: DoorMaterial.SolidCore
+},
+{ 
+  id: '4', 
+  name: 'Wall 4', 
+  type: 'Wall', 
+  width: 8, 
+  height: 8, 
+  rValue: InsulationRValue.R19, 
+  isExterior: false, 
+  sunExposed: false, 
+  glassWidth: 0, 
+  glassHeight: 0, 
+  glassType: GlassType.None,
+  hasDoor: false,
+  doorWidth: 3,
+  doorHeight: 7,
+  doorMaterial: DoorMaterial.SolidCore
+},
   ]);
 
   const [usage, setUsage] = useState<UsageFactors>({
