@@ -718,9 +718,15 @@ const App: React.FC = () => {
                       </div>
                       <div className="bg-slate-50 p-6 rounded-none border border-slate-100 shadow-sm">
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 font-montserrat">Internal</div>
-                        <div className="text-2xl font-black text-[#333333] tracking-tighter font-montserrat"> <pre className="text-[10px] whitespace-pre-wrap">
-  {JSON.stringify(result.breakdown, null, 2)}
-</pre>
+                        <div className="text-2xl font-black text-[#333333] tracking-tighter font-montserrat">
+  {Math.round(
+    (
+      result.breakdown.qLighting +
+      result.breakdown.qPeople +
+      result.breakdown.qExtra
+    ) / 16
+  )}
+</div>
 </div>
                       </div>
                       <div className="bg-slate-50 p-6 rounded-none border border-slate-100 shadow-sm">
