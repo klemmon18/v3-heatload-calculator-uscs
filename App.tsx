@@ -104,6 +104,8 @@ const App: React.FC = () => {
   doorHeight: 7,
   doorMaterial: DoorMaterial.SolidCore
 },
+    { id: '5', name: 'Ceiling', type: 'Ceiling', width: 10, height: 8, rValue: InsulationRValue.R30, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None, isVaulted: false, minHeight: 8, maxHeight: 10 },
+    { id: '6', name: 'Floor', type: 'Floor', width: 10, height: 8, rValue: InsulationRValue.None, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None, isRadiantFloor: false },
   ]);
 
   const [usage, setUsage] = useState<UsageFactors>({
@@ -151,7 +153,7 @@ const App: React.FC = () => {
       if (s.id === id) {
         let finalValue = value;
         
-        if (['width', 'height', 'minHeight', 'maxHeight', 'glassWidth', 'glassHeight'].includes(field as string)) {
+        if (['width', 'height', 'minHeight', 'maxHeight', 'glassWidth', 'glassHeight', 'doorWidth', 'doorHeight'].includes(field as string)) {
           const numVal = Number(value);
           if (numVal < 0) finalValue = 0;
           if (numVal > 1000) finalValue = 1000; 
@@ -527,6 +529,79 @@ const App: React.FC = () => {
                         </div>
                       </div>
                       
+                      {/* Door Section — wall-specific, hidden until selected */}
+                      {s.type === 'Wall' && (
+                        <div className="pt-2 mt-1 border-t border-slate-200">
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={!!s.hasDoor}
+                              onChange={(e) => updateSurface(s.id, 'hasDoor', e.target.checked)}
+                              className="w-5 h-5 rounded-none border-slate-300 text-[#7A1C2D] focus:ring-[#7A1C2D]"
+                            />
+                            <span className="text-[11px] font-black text-slate-600 uppercase tracking-widest">
+                              Door on this wall
+                            </span>
+                          </label>
+
+                          {s.hasDoor && (
+                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-5 animate-in fade-in slide-in-from-top-2 duration-200">
+                              <div className="space-y-2 min-w-0">
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                  Door Dimensions (ft)
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <div className="min-w-0">
+                                    <span className="text-[8px] font-bold text-slate-300 block mb-1">W</span>
+                                    <input
+                                      type="number"
+                                      value={s.doorWidth === 0 ? '' : s.doorWidth}
+                                      onChange={(e) => updateSurface(s.id, 'doorWidth', parseNumberInput(e.target.value))}
+                                      onFocus={(e) => e.target.select()}
+                                      className="w-[58px] bg-white border border-slate-200 rounded-none px-2 py-2.5 text-[16px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    />
+                                  </div>
+                                  <span className="text-slate-300 font-bold mt-4">×</span>
+                                  <div className="min-w-0">
+                                    <span className="text-[8px] font-bold text-slate-300 block mb-1">H</span>
+                                    <input
+                                      type="number"
+                                      value={s.doorHeight === 0 ? '' : s.doorHeight}
+                                      onChange={(e) => updateSurface(s.id, 'doorHeight', parseNumberInput(e.target.value))}
+                                      onFocus={(e) => e.target.select()}
+                                      className="w-[58px] bg-white border border-slate-200 rounded-none px-2 py-2.5 text-[16px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="text-[9px] font-black text-[#7A1C2D] uppercase tracking-widest">
+                                  Area: {(s.doorWidth || 0) * (s.doorHeight || 0)} sq ft
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 min-w-0">
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                  Door Material
+                                </label>
+                                <div className="relative">
+                                  <select
+                                    value={s.doorMaterial}
+                                    onChange={(e) => updateSurface(s.id, 'doorMaterial', e.target.value as DoorMaterial)}
+                                    className="w-full bg-white border border-slate-200 rounded-none px-3 py-3.5 text-xs font-bold text-slate-800 focus:border-[#7A1C2D] outline-none appearance-none pr-9"
+                                  >
+                                    {Object.values(DoorMaterial).map((material) => (
+                                      <option key={material} value={material}>
+                                        {material}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {s.type === 'Ceiling' && s.isVaulted && (
                          <div className="space-y-2">
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Insulation</label>
