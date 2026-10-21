@@ -52,6 +52,16 @@ export interface SurfaceInput {
   isRadiantFloor?: boolean;
 }
 
+// Room input strings preserve blank and invalid entries for validation.
+export interface RoomDimensionInputs {
+  width: string;
+  depth: string;
+  height: string;
+}
+
+// Geometry is derived from the room, never edited per standard surface.
+export type SurfaceSettings = Omit<SurfaceInput, 'width' | 'height'>;
+
 export interface UsageFactors {
   peopleCount: number;
   peopleHours: number;

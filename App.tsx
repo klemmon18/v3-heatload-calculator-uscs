@@ -23,25 +23,25 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { 
-  SurfaceInput, 
   UsageFactors, 
   InsulationRValue, 
   GlassType,
   DoorMaterial
 } from './types';
 import { calculateUSCSLoad } from './utils/calculations';
+import { deriveRoomSurfaces, validateRoomDimensions } from './utils/geometry';
+import type { RoomDimensionInputs, SurfaceSettings } from './types';
 import { USCS_PRODUCTS } from './constants';
 
 const LOGO_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAABQBAMAAAA+A8YJAAAAG1BMVEXYv8D///8AAAD/v8D/uMD/wMD/xMD/ycD/z8D8o7uLAAAACXBIWXMAAA7EAAAOxAGVKw4bAAADNUlEQVRYhe2XzY7TMBSFp0092NCOu2Ym4Q2YgXWvK8RMK+IdWInpDRZasWCFBSs66pC5z8TJxPlpYyD1U9V98uece+NzzonK6I8XG7W0Yp9yM48Hw5hS6XieVjR5FPsI68EwY8m0H09G37P7/CjO7vW7WFrx5FE0M2I9GGYsmfTjyY7f4X6/UUt75UfRDYYZi7N7fX6vX4LlxZNH0UaIDWCIscS/fX49L94S9hFiAxhirL7/8uvyYfHkUbQBYisYYizP7vN96ZeyjxArwPBiuXd/6RftLp48ijpArAfDiuX0Xp9fBks8eRRlgFgPhhlL/C9fnh9vifYRYgUYYuz8Pl/2Szl/p79X6Y9X+uMVX4KlxZNHUQeI68EwY4kfXz7Nl/mSR1EHiOvBMGPpt788Px5vCfYRYvVgmLE8v9fnh96STx5F9WCYsTy/z9f9MvYRYvVgmLEY6/P79bCkvZ6p83v98Up/vOJLsLR48ii6X6p349eDYcYSv/ny4eXJp8idX0/9/p9H8Zkv9xO5DYYZS/3+y4vXh+7mP463u/G7WNoLzYxi3RhizfH04uWpW89fL8f7e32vP8Xv/CjWjSHWHPv9L98fP3X9/mR9/2K9fS/uB8OMxfv9lzfXh67P/5Xv8/7yvX398uRRrB9DrDn+xsv3P3T7/H/5PrvPr/ul7S+eXhTr+9uMZcffevm7H7p+frf+yvYXu8/3S1+8vXjyKFYvNTPW679fHj91/X6/fJ+9/fK9Xf99+ZLHfLkv76fE70fRzIj1Xp9ff+p6S798v+8v7S7e8uRRVDPifq/P7/vPXO/vl/vL8X6+9MVLPT/W76fEb96/H8WqMfX7fPnyp/p9vvT5pS3B0p8vP4q3/W28H8U6D+P9fOmLXvNl3m+0fT/WzYv7f7x8/+P7fOn798ut938v/f6fR7FmHuvNf3p5vR/ i/vPXO/vl/vL8X6+9MVLPT/W76fEb96/H8WqMfX7fPnyp/p9vvT5pS3B0p8vP4q3/W28H8U6D+P9fOmLXvNl3m+0fT/WzYv7f7x8/+P7fOn798ut938v/f6fR7FmHuvNf3p5vR/uP1/m6/45n/ly76e8F08exRov7v94+fH960fP75f7y/V9L2t5O16fL365m9/29X68+I2Xf59uS38p3r6XNfvfXvx9S898mS/m7f6/L/W8v3R4eYsfL08exf8U/YvHkx9F89v2P9mDIn+p/N0fLzYv3va34pW/5EnxS97yF96LhP/CfyfD74T89+Xv/778A/X9R1/8G5T/N8W/R5P/f/9Yf+o/q8t8uf/0f8VvYfD08v1L8S/X0Uv9S639e/UfT5/8f+f663G/vT/9/7/F/234EizN7N+v9McXfAn79v6v99P/727+87jffvS5rOUp3va9eNu/f7p86P7v6/G3F//n8Gv59T+Pr/6uL/Wf3v4E64/Yv196/8/j998fX/1dvX0v+v8Gv9O79S/F0iYw/0mFmX26v9v6l8rMvP4vNf/vE86Yf6vM/m/Y/";
 
 const App: React.FC = () => {
-  const [surfaces, setSurfaces] = useState<SurfaceInput[]>([
+  const [roomDimensions, setRoomDimensions] = useState<RoomDimensionInputs>({ width: '', depth: '', height: '' });
+  const [surfaceSettings, setSurfaceSettings] = useState<SurfaceSettings[]>([
     { 
   id: '1', 
   name: 'Wall 1', 
   type: 'Wall', 
-  width: 10, 
-  height: 8, 
   rValue: InsulationRValue.R19, 
   isExterior: false, 
   sunExposed: false, 
@@ -57,8 +57,6 @@ const App: React.FC = () => {
   id: '2', 
   name: 'Wall 2', 
   type: 'Wall', 
-  width: 10, 
-  height: 8, 
   rValue: InsulationRValue.R19, 
   isExterior: false, 
   sunExposed: false, 
@@ -74,8 +72,6 @@ const App: React.FC = () => {
   id: '3', 
   name: 'Wall 3', 
   type: 'Wall', 
-  width: 8, 
-  height: 8, 
   rValue: InsulationRValue.R19, 
   isExterior: false, 
   sunExposed: false, 
@@ -91,8 +87,6 @@ const App: React.FC = () => {
   id: '4', 
   name: 'Wall 4', 
   type: 'Wall', 
-  width: 8, 
-  height: 8, 
   rValue: InsulationRValue.R19, 
   isExterior: false, 
   sunExposed: false, 
@@ -104,8 +98,8 @@ const App: React.FC = () => {
   doorHeight: 7,
   doorMaterial: DoorMaterial.SolidCore
 },
-    { id: '5', name: 'Ceiling', type: 'Ceiling', width: 10, height: 8, rValue: InsulationRValue.R30, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None, isVaulted: false, minHeight: 8, maxHeight: 10 },
-    { id: '6', name: 'Floor', type: 'Floor', width: 10, height: 8, rValue: InsulationRValue.None, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None, isRadiantFloor: false },
+    { id: '5', name: 'Ceiling', type: 'Ceiling', rValue: InsulationRValue.R30, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None, isVaulted: false, minHeight: 8, maxHeight: 10 },
+    { id: '6', name: 'Floor', type: 'Floor', rValue: InsulationRValue.None, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None, isRadiantFloor: false },
   ]);
 
   const [usage, setUsage] = useState<UsageFactors>({
@@ -130,7 +124,16 @@ const App: React.FC = () => {
   const [vaporBarrier, setVaporBarrier] = useState<'unselected' | 'yes' | 'no'>('unselected');
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-  const [infoConfirmed, setInfoConfirmed] = useState(false);
+  const [verificationConfirmed, setInfoConfirmed] = useState(false);
+  const dimensionErrors = validateRoomDimensions(roomDimensions);
+  const roomGeometryValid = Object.values(dimensionErrors).every(error => !error);
+  const infoConfirmed = verificationConfirmed && roomGeometryValid;
+  const surfaces = useMemo(() => deriveRoomSurfaces(surfaceSettings, roomDimensions), [surfaceSettings, roomDimensions]);
+
+  const updateRoomDimension = (field: keyof RoomDimensionInputs, value: string) => {
+    setInfoConfirmed(false);
+    setRoomDimensions(current => ({ ...current, [field]: value }));
+  };
 
   const isCalculable = useMemo(() => {
     return vaporBarrier === 'yes' || (vaporBarrier === 'no' && disclaimerAccepted);
@@ -146,14 +149,14 @@ const App: React.FC = () => {
       .sort((a, b) => a.btuCapacity - b.btuCapacity);
   }, [result.totalBtuLoad, isCalculable, infoConfirmed]);
 
-  const updateSurface = (id: string, field: keyof SurfaceInput, value: any) => {
+  const updateSurface = (id: string, field: keyof SurfaceSettings, value: any) => {
     if (infoConfirmed) setInfoConfirmed(false);
 
-    setSurfaces(surfaces.map(s => {
+    setSurfaceSettings(surfaceSettings.map(s => {
       if (s.id === id) {
         let finalValue = value;
         
-        if (['width', 'height', 'minHeight', 'maxHeight', 'glassWidth', 'glassHeight', 'doorWidth', 'doorHeight'].includes(field as string)) {
+        if (['minHeight', 'maxHeight', 'glassWidth', 'glassHeight', 'doorWidth', 'doorHeight'].includes(field as string)) {
           const numVal = Number(value);
           if (numVal < 0) finalValue = 0;
           if (numVal > 1000) finalValue = 1000; 
@@ -305,6 +308,30 @@ const App: React.FC = () => {
           
           <div className="lg:col-span-8 space-y-12">
             
+            <section className="bg-white p-10 shadow-xl border border-slate-200 space-y-6" aria-labelledby="room-dimensions-heading">
+              <h3 id="room-dimensions-heading" className="text-xl font-black uppercase tracking-widest text-[#7A1C2D]">Room Dimensions</h3>
+              <p className="text-sm text-slate-600">Enter the room dimensions in feet. Walls, ceiling, and floor are calculated from these measurements.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {(['width', 'depth', 'height'] as const).map(field => (
+                  <div key={field} className="space-y-2">
+                    <label htmlFor={`room-${field}`} className="block text-sm font-bold capitalize">{field[0].toUpperCase() + field.slice(1)} (ft)</label>
+                    <input
+                      id={`room-${field}`}
+                      type="text"
+                      inputMode="decimal"
+                      required
+                      value={roomDimensions[field]}
+                      onChange={event => updateRoomDimension(field, event.target.value)}
+                      aria-invalid={!!dimensionErrors[field]}
+                      aria-describedby={dimensionErrors[field] ? `room-${field}-error` : undefined}
+                      className="w-full border border-slate-300 px-4 py-3 text-lg outline-none focus:border-[#7A1C2D]"
+                    />
+                    {dimensionErrors[field] && <p id={`room-${field}-error`} className="text-sm text-red-700">{dimensionErrors[field]}</p>}
+                  </div>
+                ))}
+              </div>
+            </section>
+
             {/* Vapor Barrier Gatekeeper */}
             <section className="bg-[#333333] p-10 md:p-14 text-white shadow-2xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none transition-transform group-hover:scale-110 duration-1000">
@@ -352,7 +379,7 @@ const App: React.FC = () => {
                 </div>
                 <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
                   {surfaces.map((s) => (
-                    <div key={s.id} className="p-8 bg-slate-50 rounded-none border border-slate-200 space-y-6 transition-all hover:border-[#7A1C2D]/40 group shadow-sm hover:shadow-md">
+                    <div key={s.id} data-testid={`surface-${s.id}`} className="p-8 bg-slate-50 rounded-none border border-slate-200 space-y-6 transition-all hover:border-[#7A1C2D]/40 group shadow-sm hover:shadow-md">
                       <div className="flex items-center justify-between border-b border-slate-200 pb-5">
                         <span className="font-black text-base text-[#7A1C2D] uppercase tracking-wider font-montserrat">{s.name}</span>
                         <div className="flex gap-4">
@@ -419,36 +446,24 @@ const App: React.FC = () => {
 
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            {s.type === 'Wall' ? 'Dimensions (ft)' : 'ROOM FOOTPRINT DIMENSIONS (FT)'}
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              value={s.width === 0 ? '' : s.width}
-                              onChange={(e) => updateSurface(s.id, 'width', parseNumberInput(e.target.value))}
-                              onFocus={(e) => e.target.select()}
-                              className="w-[50px] shrink-0 bg-white border border-slate-200 rounded-none px-3 py-3.5 text-[18px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                            <span className="text-slate-300 font-bold">×</span>
-                            <input
-                              type="number"
-                              value={s.height === 0 ? '' : s.height}
-                              onChange={(e) => updateSurface(s.id, 'height', parseNumberInput(e.target.value))}
-                              onFocus={(e) => e.target.select()}
-                              className="w-[50px] shrink-0 bg-white border border-slate-200 rounded-none px-3 py-3.5 text-[18px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                          </div>
+                          <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            {s.type === 'Wall' ? 'Derived Dimensions (ft)' : 'Derived Room Footprint (ft)'}
+                          </span>
+                          <p data-testid={`surface-${s.id}-geometry`} className="text-base font-bold text-slate-800">
+                            {roomGeometryValid ? `${s.width} × ${s.height} = ${Number((s.width * s.height).toFixed(6))} sq ft` : 'Enter valid room dimensions above.'}
+                          </p>
                         </div>
-                        
+
                         {/* Height logic for Vaulted or Standard Ceiling */}
                         <div className="space-y-2">
                           {s.type === 'Ceiling' && s.isVaulted ? (
                             <div className="space-y-4">
                               <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Shortest Height (ft)</label>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1" htmlFor="ceiling-min-height">Shortest Height (ft)</label>
                                 <input
                                   type="number"
+                                  id="ceiling-min-height"
+                                  step="any"
                                   value={s.minHeight === 0 ? '' : s.minHeight}
                                   onChange={(e) => updateSurface(s.id, 'minHeight', parseNumberInput(e.target.value))}
                                   onFocus={(e) => e.target.select()}
@@ -456,9 +471,11 @@ const App: React.FC = () => {
                                 />
                               </div>
                               <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tallest Height (ft)</label>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1" htmlFor="ceiling-max-height">Tallest Height (ft)</label>
                                 <input
                                   type="number"
+                                  id="ceiling-max-height"
+                                  step="any"
                                   value={s.maxHeight === 0 ? '' : s.maxHeight}
                                   onChange={(e) => updateSurface(s.id, 'maxHeight', parseNumberInput(e.target.value))}
                                   onFocus={(e) => e.target.select()}
@@ -470,7 +487,7 @@ const App: React.FC = () => {
                             <div className="space-y-2">
                               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Insulation</label>
                               <div className="relative">
-                                <select value={s.rValue} onChange={(e) => updateSurface(s.id, 'rValue', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3.5 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none appearance-none pr-10">
+                                <select aria-label={`Insulation for ${s.name}`} value={s.rValue} onChange={(e) => updateSurface(s.id, 'rValue', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3.5 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none appearance-none pr-10">
                                   {Object.values(InsulationRValue).filter(v => typeof v === 'number').map(v => (
                                     <option key={v} value={v}>
                                       {v === 0 ? 'None (No Insulation)' : `R-${v}`}
@@ -555,6 +572,7 @@ const App: React.FC = () => {
                                     <span className="text-[8px] font-bold text-slate-300 block mb-1">W</span>
                                     <input
                                       type="number"
+                                      aria-label={`Door width on ${s.name}`}
                                       value={s.doorWidth === 0 ? '' : s.doorWidth}
                                       onChange={(e) => updateSurface(s.id, 'doorWidth', parseNumberInput(e.target.value))}
                                       onFocus={(e) => e.target.select()}
@@ -566,6 +584,7 @@ const App: React.FC = () => {
                                     <span className="text-[8px] font-bold text-slate-300 block mb-1">H</span>
                                     <input
                                       type="number"
+                                      aria-label={`Door height on ${s.name}`}
                                       value={s.doorHeight === 0 ? '' : s.doorHeight}
                                       onChange={(e) => updateSurface(s.id, 'doorHeight', parseNumberInput(e.target.value))}
                                       onFocus={(e) => e.target.select()}
@@ -584,6 +603,7 @@ const App: React.FC = () => {
                                 </label>
                                 <div className="relative">
                                   <select
+                                    aria-label={`Door material on ${s.name}`}
                                     value={s.doorMaterial}
                                     onChange={(e) => updateSurface(s.id, 'doorMaterial', e.target.value as DoorMaterial)}
                                     className="w-full bg-white border border-slate-200 rounded-none px-3 py-3.5 text-xs font-bold text-slate-800 focus:border-[#7A1C2D] outline-none appearance-none pr-9"
@@ -606,7 +626,7 @@ const App: React.FC = () => {
                          <div className="space-y-2">
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Insulation</label>
                             <div className="relative">
-                              <select value={s.rValue} onChange={(e) => updateSurface(s.id, 'rValue', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3.5 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none appearance-none pr-10">
+                              <select aria-label={`Insulation for ${s.name}`} value={s.rValue} onChange={(e) => updateSurface(s.id, 'rValue', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3.5 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none appearance-none pr-10">
                                 {Object.values(InsulationRValue).filter(v => typeof v === 'number').map(v => (
                                   <option key={v} value={v}>
                                     {v === 0 ? 'None (No Insulation)' : `R-${v}`}
@@ -811,6 +831,7 @@ const App: React.FC = () => {
                   </div>
                   <div className="relative z-10 space-y-6">
                     <h3 className="text-xl font-black uppercase tracking-widest font-montserrat text-[#7A1C2D]">Verify Calculation</h3>
+                    {!roomGeometryValid && <p role="alert" className="text-sm font-bold text-red-700">Enter a valid positive Width, Depth, and Height before verifying the calculation.</p>}
                     <p className="text-sm font-bold text-slate-500 italic leading-relaxed">Please review your inputs. Precision is required for stability.</p>
                     
                     <label className="flex items-start gap-4 cursor-pointer p-6 bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-colors">
@@ -818,7 +839,8 @@ const App: React.FC = () => {
                         <input 
                           type="checkbox" 
                           checked={infoConfirmed} 
-                          onChange={(e) => setInfoConfirmed(e.target.checked)}
+                          disabled={!roomGeometryValid}
+                          onChange={(e) => setInfoConfirmed(roomGeometryValid && e.target.checked)}
                           className="w-6 h-6 rounded-none border-slate-300 text-[#7A1C2D] focus:ring-[#7A1C2D]" 
                         />
                       </div>
@@ -911,7 +933,7 @@ const App: React.FC = () => {
               <div className="p-8 bg-slate-100 rounded-none border-l-8 border-[#333333] max-w-3xl shadow-sm">
                 <h4 className="text-[13px] font-black text-[#333333] uppercase tracking-[0.2em] mb-3 font-montserrat">Selection Notice</h4>
                 <p className="text-[14px] text-slate-500 leading-relaxed font-bold">
-                  All systems listed below meet or exceed your calculated peak load requirement of <span className="text-[#7A1C2D] font-black">{result.totalBtuLoad} BTU/h</span>. 
+                  All systems listed below meet or exceed your calculated peak load requirement of <span className="text-[#7A1C2D] font-black">{isCalculable && infoConfirmed ? result.totalBtuLoad : '---'} BTU/h</span>.
                   Matches are based on the maximum capacity of the series.
                 </p>
               </div>
