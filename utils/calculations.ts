@@ -1,4 +1,5 @@
 import { SurfaceInput, UsageFactors, CalculationResult, GlassType, DoorMaterial } from '../types';
+import { getSurfaceAreas } from './surfaceAreas';
 
 export const calculateUSCSLoad = (
   surfaces: SurfaceInput[],
@@ -57,23 +58,8 @@ export const calculateUSCSLoad = (
   surfaces.forEach(s => {
     const deltaT = s.isExterior ? deltaT_Outdoor : deltaT_Interior;
 
-    const totalArea = s.width * s.height;
-
-    const computedGlassArea = (s.glassWidth || 0) * (s.glassHeight || 0);
-    const actualGlassArea =
-      s.glassType === GlassType.None ? 0 : Math.min(totalArea, computedGlassArea);
-
-    // Doors are wall-specific. Cap door area to the remaining wall area
-    // after glass so openings can never exceed the wall surface.
-    const computedDoorArea =
-      s.type === 'Wall' && s.hasDoor
-        ? (s.doorWidth || 0) * (s.doorHeight || 0)
-        : 0;
-
-    const availableAreaAfterGlass = Math.max(0, totalArea - actualGlassArea);
-    const actualDoorArea = Math.min(availableAreaAfterGlass, computedDoorArea);
-
-    const wallArea = Math.max(0, totalArea - actualGlassArea - actualDoorArea);
+    const { totalArea, glassArea: actualGlassArea, doorArea: actualDoorArea,
+      opaqueArea: wallArea, glassType } = getSurfaceAreas(s);
 
     // Track totals for dampener
     if (s.type === 'Wall') {
@@ -100,9 +86,9 @@ export const calculateUSCSLoad = (
     if (s.type === 'Ceiling') qCeiling_day += conduction;
 
     // === GLASS ===
-    if (s.glassType !== GlassType.None) {
+    if (glassType !== GlassType.None) {
       const factor =
-        s.glassType === GlassType.DoublePane
+        glassType === GlassType.DoublePane
           ? FACTOR_GLASS_DOUBLE
           : FACTOR_GLASS_SINGLE;
 

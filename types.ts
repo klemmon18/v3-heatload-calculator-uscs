@@ -14,6 +14,12 @@ export enum GlassType {
   DoublePane = 'Double Pane'
 }
 
+export enum WallConstruction {
+  Opaque = 'Opaque',
+  SinglePaneGlass = 'Single-pane glass wall',
+  DoublePaneGlass = 'Double-pane glass wall'
+}
+
 export enum DoorMaterial {
   HollowCore = 'Hollow Core Interior',
   SolidCore = 'Solid Core Wood',
@@ -36,6 +42,7 @@ export interface SurfaceInput {
   glassWidth: number;
   glassHeight: number;
   glassType: GlassType;
+  wallConstruction?: WallConstruction;
 
   // Door support (wall-specific)
   hasDoor?: boolean;

@@ -26,10 +26,13 @@ import {
   UsageFactors, 
   InsulationRValue, 
   GlassType,
-  DoorMaterial
+  DoorMaterial,
+  WallConstruction
 } from './types';
 import { calculateUSCSLoad } from './utils/calculations';
 import { deriveRoomSurfaces, validateRoomDimensions } from './utils/geometry';
+import { fullWallGlassType, getSurfaceAreas } from './utils/surfaceAreas';
+import { parseLightingWatts, validateLightingWatts } from './utils/lighting';
 import type { RoomDimensionInputs, SurfaceSettings } from './types';
 import { USCS_PRODUCTS } from './constants';
 
@@ -102,12 +105,15 @@ const App: React.FC = () => {
     { id: '6', name: 'Floor', type: 'Floor', rValue: InsulationRValue.None, isExterior: false, sunExposed: false, glassWidth: 0, glassHeight: 0, glassType: GlassType.None, isRadiantFloor: false },
   ]);
 
-  const [usage, setUsage] = useState<UsageFactors>({
+  const [lightingWattsInput, setLightingWattsInput] = useState('');
+  const lightingWatts = parseLightingWatts(lightingWattsInput);
+  const lightingError = validateLightingWatts(lightingWattsInput);
+
+  const [usage, setUsage] = useState<Omit<UsageFactors, 'ledWatts'>>({
     peopleCount: 0,
     peopleHours: 0,
     applianceWatts: 0,
     applianceHours: 0,
-    ledWatts: 20,
     ledHours: 5,
     incandescentWatts: 0,
     incandescentHours: 0,
@@ -127,8 +133,10 @@ const App: React.FC = () => {
   const [verificationConfirmed, setInfoConfirmed] = useState(false);
   const dimensionErrors = validateRoomDimensions(roomDimensions);
   const roomGeometryValid = Object.values(dimensionErrors).every(error => !error);
-  const infoConfirmed = verificationConfirmed && roomGeometryValid;
   const surfaces = useMemo(() => deriveRoomSurfaces(surfaceSettings, roomDimensions), [surfaceSettings, roomDimensions]);
+  const surfaceErrors = surfaces.map(surface => getSurfaceAreas(surface).error).filter(Boolean);
+  const inputsValid = roomGeometryValid && !lightingError && surfaceErrors.length === 0;
+  const infoConfirmed = verificationConfirmed && inputsValid;
 
   const updateRoomDimension = (field: keyof RoomDimensionInputs, value: string) => {
     setInfoConfirmed(false);
@@ -140,8 +148,8 @@ const App: React.FC = () => {
   }, [vaporBarrier, disclaimerAccepted]);
 
   const result = useMemo(() => {
-    return calculateUSCSLoad(surfaces, usage);
-  }, [surfaces, usage]);
+    return calculateUSCSLoad(surfaces, { ...usage, ledWatts: lightingWatts ?? 0 });
+  }, [surfaces, usage, lightingWatts]);
 
   const recommendedProducts = useMemo(() => {
     if (!isCalculable || !infoConfirmed) return [];
@@ -168,6 +176,15 @@ const App: React.FC = () => {
       }
       return s;
     }));
+  };
+
+  const updateWallConstruction = (id: string, value: string) => {
+    setInfoConfirmed(false);
+    setSurfaceSettings(current => current.map(surface => surface.id !== id ? surface :
+      value === WallConstruction.SinglePaneGlass || value === WallConstruction.DoublePaneGlass
+        ? { ...surface, wallConstruction: value }
+        : { ...surface, wallConstruction: WallConstruction.Opaque, rValue: Number(value) }
+    ));
   };
 
   const handleVaporBarrierChange = (val: 'yes' | 'no') => {
@@ -485,13 +502,18 @@ const App: React.FC = () => {
                             </div>
                           ) : (
                             <div className="space-y-2">
-                              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Insulation</label>
+                              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.type === 'Wall' ? 'Wall Construction' : 'Insulation'}</label>
                               <div className="relative">
-                                <select aria-label={`Insulation for ${s.name}`} value={s.rValue} onChange={(e) => updateSurface(s.id, 'rValue', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3.5 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none appearance-none pr-10">
+                                <select aria-label={`${s.type === 'Wall' ? 'Wall Construction' : 'Insulation'} for ${s.name}`}
+                                  value={fullWallGlassType(s) !== GlassType.None ? s.wallConstruction : s.rValue}
+                                  onChange={(e) => s.type === 'Wall' ? updateWallConstruction(s.id, e.target.value) : updateSurface(s.id, 'rValue', Number(e.target.value))} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3.5 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none appearance-none pr-10">
                                   {Object.values(InsulationRValue).filter(v => typeof v === 'number').map(v => (
                                     <option key={v} value={v}>
                                       {v === 0 ? 'None (No Insulation)' : `R-${v}`}
                                     </option>
+                                  ))}
+                                  {s.type === 'Wall' && [WallConstruction.SinglePaneGlass, WallConstruction.DoublePaneGlass].map(construction => (
+                                    <option key={construction} value={construction}>{construction}</option>
                                   ))}
                                 </select>
                                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -501,51 +523,64 @@ const App: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-6 pt-2">
-                        <div className={`space-y-2 transition-all ${s.glassType !== GlassType.None ? 'opacity-100' : 'opacity-25 pointer-events-none'}`}>
-                          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Glass Dimensions (ft)</label>
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-[64px] bg-white border border-slate-200 px-2 py-3 text-sm font-bold text-left tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
-                              <span className="text-[8px] font-bold text-slate-300 block mb-1">W</span>
-                              <input
-                                type="number"
-                                value={s.glassWidth === 0 ? '' : s.glassWidth}
-                                onChange={(e) => updateSurface(s.id, 'glassWidth', parseNumberInput(e.target.value))}
-                                onFocus={(e) => e.target.select()}
-                                className="w-[45px] bg-white border border-slate-200 rounded-none px-3 py-2.5 text-[16px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                disabled={s.glassType === GlassType.None}
-                              />
+                      {roomGeometryValid && getSurfaceAreas(s).error && (
+                        <p role="alert" className="text-sm font-bold text-red-700">{getSurfaceAreas(s).error}</p>
+                      )}
+                      {fullWallGlassType(s) !== GlassType.None ? (
+                        <div className="bg-blue-50 border border-blue-200 p-4 text-sm text-slate-800" data-testid={`full-glass-${s.id}`}>
+                          <p className="font-bold">This derived wall is treated as full glass ({fullWallGlassType(s)}).</p>
+                          <p>Separate glass-opening controls are hidden to prevent counting the wall twice. Doors remain separate and are subtracted from the glass area.</p>
+                          {roomGeometryValid && <p>Glazing area after doors: {Number(getSurfaceAreas(s).glassArea.toFixed(6))} sq ft.</p>}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-6 pt-2">
+                          <div className={`space-y-2 transition-all ${s.glassType !== GlassType.None ? 'opacity-100' : 'opacity-25 pointer-events-none'}`}>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Glass Dimensions (ft)</label>
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-[64px] bg-white border border-slate-200 px-2 py-3 text-sm font-bold text-left tabular-nums text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                <span className="text-[8px] font-bold text-slate-300 block mb-1">W</span>
+                                <input
+                                  type="number"
+                                  aria-label={`Glass width for ${s.name}`}
+                                  value={s.glassWidth === 0 ? '' : s.glassWidth}
+                                  onChange={(e) => updateSurface(s.id, 'glassWidth', parseNumberInput(e.target.value))}
+                                  onFocus={(e) => e.target.select()}
+                                  className="w-[45px] bg-white border border-slate-200 rounded-none px-3 py-2.5 text-[16px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                  disabled={s.glassType === GlassType.None}
+                                />
+                              </div>
+                              <span className="text-slate-300 font-bold mt-4">×</span>
+                              <div className="flex-1 min-w-0">
+                                <span className="text-[8px] font-bold text-slate-300 block mb-1">H</span>
+                                <input
+                                  type="number"
+                                  aria-label={`Glass height for ${s.name}`}
+                                  value={s.glassHeight === 0 ? '' : s.glassHeight}
+                                  onChange={(e) => updateSurface(s.id, 'glassHeight', parseNumberInput(e.target.value))}
+                                  onFocus={(e) => e.target.select()}
+                                  className="w-full bg-white border border-slate-200 rounded-none px-3 py-2.5 text-[16px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                  disabled={s.glassType === GlassType.None}
+                                />
+                              </div>
                             </div>
-                            <span className="text-slate-300 font-bold mt-4">×</span>
-                            <div className="flex-1 min-w-0">
-                              <span className="text-[8px] font-bold text-slate-300 block mb-1">H</span>
-                              <input
-                                type="number"
-                                value={s.glassHeight === 0 ? '' : s.glassHeight}
-                                onChange={(e) => updateSurface(s.id, 'glassHeight', parseNumberInput(e.target.value))}
-                                onFocus={(e) => e.target.select()}
-                                className="w-full bg-white border border-slate-200 rounded-none px-3 py-2.5 text-[16px] leading-none font-bold text-left text-slate-800 focus:border-[#7A1C2D] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                disabled={s.glassType === GlassType.None}
-                              />
+                            {s.glassType !== GlassType.None && (
+                              <div className="text-[9px] font-black text-[#7A1C2D] uppercase tracking-widest mt-1">Area: {s.glassWidth * s.glassHeight} sq ft</div>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Glass Type</label>
+                            <div className="relative">
+                              <select aria-label={`Glass Type for ${s.name}`} value={s.glassType} onChange={(e) => updateSurface(s.id, 'glassType', e.target.value)} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3.5 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none appearance-none pr-10">
+                                {Object.values(GlassType).map(t => (
+                                  <option key={t} value={t}>{t}</option>
+                                ))}
+                              </select>
+                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                             </div>
                           </div>
-                          {s.glassType !== GlassType.None && (
-                            <div className="text-[9px] font-black text-[#7A1C2D] uppercase tracking-widest mt-1">Area: {s.glassWidth * s.glassHeight} sq ft</div>
-                          )}
                         </div>
-                        <div className="space-y-2">
-                          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Glass Type</label>
-                          <div className="relative">
-                            <select value={s.glassType} onChange={(e) => updateSurface(s.id, 'glassType', e.target.value)} className="w-full bg-white border border-slate-200 rounded-none px-4 py-3.5 text-sm font-bold text-slate-800 focus:border-[#7A1C2D] outline-none appearance-none pr-10">
-                              {Object.values(GlassType).map(t => (
-                                <option key={t} value={t}>{t}</option>
-                              ))}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                          </div>
-                        </div>
-                      </div>
-                      
+                      )}
+
                       {/* Door Section — wall-specific, hidden until selected */}
                       {s.type === 'Wall' && (
                         <div className="pt-2 mt-1 border-t border-slate-200">
@@ -726,8 +761,15 @@ const App: React.FC = () => {
                       </label>
                       <div className="grid grid-cols-2 gap-6 bg-slate-50 p-6 rounded-none border border-slate-100">
                         <div>
-                          <span className="text-[10px] font-black text-slate-500 uppercase block mb-2">LED Watts</span>
-                          <input type="number" value={usage.ledWatts} onChange={e => setUsage({...usage, ledWatts: Number(e.target.value)})} className="w-full bg-slate-800 border-slate-700 border rounded-none px-4 py-3.5 text-sm font-bold text-white focus:border-[#7A1C2D] outline-none" />
+                          <label htmlFor="lighting-watts" className="text-[10px] font-black text-slate-500 uppercase block mb-2">Total Installed Lighting Wattage</label>
+                          <input id="lighting-watts" type="text" inputMode="decimal" required
+                            value={lightingWattsInput}
+                            onChange={event => { setInfoConfirmed(false); setLightingWattsInput(event.target.value); }}
+                            aria-invalid={!!lightingError}
+                            aria-describedby={`lighting-help${lightingError ? ' lighting-error' : ''}`}
+                            className="w-full bg-slate-800 border-slate-700 border rounded-none px-4 py-3.5 text-sm font-bold text-white focus:border-[#7A1C2D] outline-none" />
+                          <p id="lighting-help" className="text-sm text-slate-600">Enter 0 if the cellar has no installed lighting. Exclude incandescent wattage entered separately.</p>
+                          {lightingError && <p id="lighting-error" className="text-sm text-red-700">{lightingError}</p>}
                         </div>
                         <div>
                           <span className="text-[10px] font-black text-slate-500 uppercase block mb-2">Incand. Watts</span>
@@ -832,6 +874,8 @@ const App: React.FC = () => {
                   <div className="relative z-10 space-y-6">
                     <h3 className="text-xl font-black uppercase tracking-widest font-montserrat text-[#7A1C2D]">Verify Calculation</h3>
                     {!roomGeometryValid && <p role="alert" className="text-sm font-bold text-red-700">Enter a valid positive Width, Depth, and Height before verifying the calculation.</p>}
+                    {lightingError && <p role="alert" className="text-sm font-bold text-red-700">{lightingError}</p>}
+                    {roomGeometryValid && surfaceErrors.length > 0 && <p role="alert" className="text-sm font-bold text-red-700">Correct the door/opening area errors shown in the surface sections before verifying.</p>}
                     <p className="text-sm font-bold text-slate-500 italic leading-relaxed">Please review your inputs. Precision is required for stability.</p>
                     
                     <label className="flex items-start gap-4 cursor-pointer p-6 bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-colors">
@@ -839,8 +883,8 @@ const App: React.FC = () => {
                         <input 
                           type="checkbox" 
                           checked={infoConfirmed} 
-                          disabled={!roomGeometryValid}
-                          onChange={(e) => setInfoConfirmed(roomGeometryValid && e.target.checked)}
+                          disabled={!inputsValid}
+                          onChange={(e) => setInfoConfirmed(inputsValid && e.target.checked)}
                           className="w-6 h-6 rounded-none border-slate-300 text-[#7A1C2D] focus:ring-[#7A1C2D]" 
                         />
                       </div>
