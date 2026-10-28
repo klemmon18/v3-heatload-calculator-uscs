@@ -10,6 +10,7 @@ const { getSurfaceAreas } = require('../utils/surfaceAreas.ts');
 const { deriveRoomSurfaces } = require('../utils/geometry.ts');
 const { parseLightingWatts, validateLightingWatts } = require('../utils/lighting.ts');
 const { WallConstruction, GlassType } = require('../types.ts');
+const { doorBaseline, standardCases } = require('./fixtures/door-baseline.cjs');
 
 const wall = { id: '1', name: 'Wall 1', type: 'Wall', width: 10, height: 8, rValue: 19,
   isExterior: false, sunExposed: false, glassType: GlassType.None, glassWidth: 0, glassHeight: 0 };
@@ -107,16 +108,54 @@ for (const value of ['0', '22', '10.5']) {
 }
 
 test('Stage 1 geometry and door baseline remain exact at explicit 0, 20, and 22 W', () => {
-  const settings = ['Wall', 'Wall', 'Wall', 'Wall', 'Ceiling', 'Floor'].map((type, i) => ({ ...wall,
-    id: String(i + 1), type, rValue: i < 4 ? 19 : i === 4 ? 30 : 0,
-    hasDoor: i === 0, doorWidth: 3, doorHeight: 7, doorMaterial: 'Solid Core Wood' }));
-  const surfaces = deriveRoomSurfaces(settings, { width: '10', depth: '10', height: '8' });
+  const fixture = doorBaseline();
+  const surfaces = deriveRoomSurfaces(fixture.settings, fixture.room);
   assert.deepEqual(surfaces.map(s => s.width * s.height), [80, 80, 80, 80, 100, 100]);
   for (const [ledWatts, expected] of [[0, 1257], [20, 1283], [22, 1285]]) {
-    const result = calculateUSCSLoad(surfaces, { ...usage, ledWatts });
+    const result = calculateUSCSLoad(surfaces, { ...fixture.usage, ledWatts });
     assert.equal(result.totalBtuLoad, expected);
     assert.equal(result.breakdown.qDoors, 5040);
     assert.equal(result.breakdown.qWalls, 8309);
     assert.equal(result.volume, 800);
+    assert.equal(result.breakdown.qAir, 1152); // 800 × 20 × 0.072, or 72 BTU/h before safety.
   }
+});
+
+test('standard regression matches every live Analysis category at 0 and 22 W', () => {
+  for (const expected of standardCases) {
+    const fixture = doorBaseline(expected.watts);
+    const result = calculateUSCSLoad(deriveRoomSurfaces(fixture.settings, fixture.room), fixture.usage);
+    assert.deepEqual(result, {
+      totalBtuLoad: expected.total, volume: 800,
+      breakdown: { qWalls: 8309, qCeiling: 1760, qFloor: 500, qGlass: 0, qDoors: 5040,
+        qSun: 0, qPeople: 0, qLighting: expected.lightingDaily, qAir: 1152,
+        qExtra: 0, qSafety: expected.safetyDaily },
+    });
+    assert.equal(Math.round((result.breakdown.qWalls + result.breakdown.qCeiling) / 16), 629);
+    assert.equal(Math.round(result.breakdown.qDoors / 16), 315);
+    assert.equal(Math.round(result.breakdown.qAir / 16), 72);
+    assert.equal(Math.round(result.breakdown.qLighting / 16), expected.internalDisplay);
+    assert.equal(Math.round(result.breakdown.qSafety / 16), expected.safetyDisplay);
+  }
+});
+
+test('vaulted 8/10 ft average height reproduces the old 81 infiltration and 1268/1296 references', () => {
+  for (const [watts, total] of [[0, 1268], [22, 1296]]) {
+    const fixture = doorBaseline(watts);
+    fixture.settings[4].isVaulted = true; // The sole changed input: average height becomes 9 ft.
+    const result = calculateUSCSLoad(deriveRoomSurfaces(fixture.settings, fixture.room), fixture.usage);
+    assert.equal(result.volume, 900);
+    assert.equal(result.breakdown.qAir, 1296); // 900 × 20 × 0.072 = 81 × 16.
+    assert.equal(result.totalBtuLoad, total);
+    assert.equal(result.breakdown.qWalls, 8309);
+    assert.equal(result.breakdown.qCeiling, 1760);
+  }
+});
+
+test('frequent door opening on produces 90 infiltration, so it cannot explain 81', () => {
+  const fixture = doorBaseline();
+  fixture.usage.frequentDoorOpening = true;
+  const result = calculateUSCSLoad(deriveRoomSurfaces(fixture.settings, fixture.room), fixture.usage);
+  assert.equal(result.volume, 800);
+  assert.equal(result.breakdown.qAir / 16, 90);
 });

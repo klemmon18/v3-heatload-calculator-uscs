@@ -4,6 +4,7 @@ const { spawn } = require('node:child_process');
 const { existsSync } = require('node:fs');
 const { once } = require('node:events');
 const { chromium } = require('playwright');
+const { doorBaseline, standardCases } = require('./fixtures/door-baseline.cjs');
 
 const origin = 'http://127.0.0.1:3187';
 let server;
@@ -228,16 +229,47 @@ test('Stage 2: lighting starts blank, explicitly accepts zero/decimals/22, and r
   assert.match(await page.locator('body').innerText(), /Engine Standby/);
 });
 
-test('Stage 2: live solid-core-door totals retain the actual pre-change baseline at 0 and 22 W', async t => {
+test('Stage 2: live door regression matches the explicit standard-room fixture and every Analysis category', async t => {
   const page = await freshPage(t);
-  await dimensions(page, '10', '10', '8', '0');
-  await page.getByRole('button', { name: 'Yes', exact: true }).click();
+  const fixture = doorBaseline();
+  await dimensions(page, fixture.room.width, fixture.room.depth, fixture.room.height, '0');
+  await page.getByRole('button', { name: fixture.vaporBarrier, exact: true }).click();
+  assert.equal(await page.getByLabel('Frequent Door Opening', { exact: false }).isChecked(), fixture.usage.frequentDoorOpening);
+  assert.deepEqual(await page.getByRole('slider').evaluateAll(inputs => inputs.map(input => input.value)),
+    [fixture.usage.ambientTemp, fixture.usage.outdoorTemp, fixture.usage.targetTemp].map(String));
+  for (const surface of fixture.settings) {
+    const card = page.getByTestId(`surface-${surface.id}`);
+    assert.equal(await card.getByLabel('Exterior', { exact: true }).isChecked(), surface.isExterior);
+    const selector = `${surface.type === 'Wall' ? 'Wall Construction' : 'Insulation'} for ${surface.name}`;
+    assert.equal(await page.getByLabel(selector, { exact: true }).inputValue(), String(surface.rValue));
+    assert.equal(await page.getByLabel(`Glass Type for ${surface.name}`, { exact: true }).inputValue(), surface.glassType);
+    if (surface.type === 'Wall') assert.equal(await card.getByLabel('Door on this wall').isChecked(), false);
+  }
+  assert.equal(await page.getByLabel('This ceiling is vaulted or angled').isChecked(), fixture.settings[4].isVaulted);
+  assert.equal(await page.getByLabel('Radiant Heating').isChecked(), fixture.settings[5].isRadiantFloor);
   await page.getByTestId('surface-1').getByLabel('Door on this wall').check();
-  for (const [watts, load] of [['0', 1257], ['22', 1285]]) {
+  assert.equal(await page.getByLabel('Door width on Wall 1', { exact: true }).inputValue(), String(fixture.settings[0].doorWidth));
+  assert.equal(await page.getByLabel('Door height on Wall 1', { exact: true }).inputValue(), String(fixture.settings[0].doorHeight));
+  assert.equal(await page.getByLabel('Door material on Wall 1', { exact: true }).inputValue(), fixture.settings[0].doorMaterial);
+  for (const expected of standardCases) {
+    await page.getByLabel('Total Installed Lighting Wattage', { exact: true }).fill(String(expected.watts));
+    await verification(page).click();
+    assert.match(await page.locator('body').innerText(), new RegExp(`${expected.total}\\s*BTU/h`));
+    assert.match(await page.locator('body').innerText(), /Room Volume: 800 cu.ft/);
+    for (const [category, value] of [['Walls/Ceiling', 629], ['Doors', 315], ['Glazing', 0],
+      ['Infiltration', 72], ['Internal', expected.internalDisplay], ['Safety Margin (20%)', expected.safetyDisplay]]) {
+      assert.match(await page.getByText(category, { exact: true }).locator('..').innerText(), new RegExp(`\\b${value}\\b`));
+    }
+  }
+  // Reproduce the differing volume input in the real interface as well.
+  await page.getByLabel('This ceiling is vaulted or angled').check();
+  assert.equal(await page.getByLabel('Shortest Height (ft)').inputValue(), '8');
+  assert.equal(await page.getByLabel('Tallest Height (ft)').inputValue(), '10');
+  for (const [watts, load] of [['0', 1268], ['22', 1296]]) {
     await page.getByLabel('Total Installed Lighting Wattage', { exact: true }).fill(watts);
     await verification(page).click();
     assert.match(await page.locator('body').innerText(), new RegExp(`${load}\\s*BTU/h`));
-    assert.match(await page.locator('body').innerText(), /Doors\s+315/);
-    assert.match(await page.locator('body').innerText(), /Room Volume: 800 cu.ft/);
+    assert.match(await page.locator('body').innerText(), /Room Volume: 900 cu.ft/);
+    assert.match(await page.getByText('Infiltration', { exact: true }).locator('..').innerText(), /\b81\b/);
   }
 });

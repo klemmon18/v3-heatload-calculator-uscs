@@ -55,22 +55,49 @@ all pass before verification.
 tests for both glass constructions, temperature differences, doors, oversized
 openings, and required lighting. Browser tests exclude CDN assets.
 
-### Measured regression baseline discrepancy
+### Confirmed standard-room regression and vaulted comparison
 
-Before Stage 2 edits, the actual Stage 1 code produced the following totals for a
-10 × 10 × 8 ft room, interior R-19 walls, a 3 × 7 ft Solid Core Wood door on Wall 1,
-R-30 ceiling, uninsulated non-radiant floor, ambient 75°F, target 55°F, and no other
-internal loads:
+The shared fixture in `tests/fixtures/door-baseline.cjs` explicitly specifies:
+vapor barrier Yes (UI gate), frequent door opening off, room 10 × 10 × 8 ft,
+all walls interior R-19, ceiling interior R-30 and **not vaulted**, floor interior
+with no insulation and radiant heating off, ambient 75°F, outdoor 95°F, target
+55°F, and a 3 × 7 ft Solid Core Wood door on Wall 1. All other internal loads are
+zero; LED/lighting runtime remains 5 hours/day. Calculation tests use this fixture,
+and the browser regression checks the live UI's corresponding selections and
+values before verification.
 
-| Explicit lighting watts | Existing code, BTU/h | Stage 2, BTU/h | Requested manual reference, BTU/h |
-| --- | --- | --- | --- |
-| 0 | 1257 | 1257 | approximately 1268 |
-| 20 | 1283 | 1283 | Stage 1 baseline: 1283 |
-| 22 | 1285 | 1285 | approximately 1296 |
+| Ceiling setting | Lighting watts | Volume, cu ft | Infiltration, BTU/h before safety | Total, BTU/h |
+| --- | --- | --- | --- | --- |
+| Standard, not vaulted | 0 | 800 | 72 | 1257 |
+| Standard, not vaulted | 22 | 800 | 72 | 1285 |
+| Vaulted, shortest 8 ft / tallest 10 ft | 0 | 900 | 81 | 1268 |
+| Vaulted, shortest 8 ft / tallest 10 ft | 22 | 900 | 81 | 1296 |
 
-The 11 BTU/h difference from the supplied manual references is not a rounding
-difference. Stage 2 preserves the measured code baseline rather than changing an
-existing formula to fit different manual figures. For 0 W, the daily breakdown is
-walls 8309, ceiling 1760, floor 500, doors 5040, air 1152, and safety 3352 BTU/day
-(rounded display values). At 22 W, lighting adds 375 BTU/day and displayed safety
-is 3427 BTU/day. The original 16-hour runtime and 20% safety margin are unchanged.
+The unchanged infiltration formula is volume × (ambient − target) × 0.072 per day,
+divided by the 16-hour compressor runtime. Standard geometry gives
+800 × 20 × 0.072 / 16 = 72 BTU/h. Selecting vaulted with the existing 8/10 ft height
+defaults uses a 9 ft average height, yielding 900 × 20 × 0.072 / 16 = 81 BTU/h.
+The extra 9 BTU/h becomes 10.8 BTU/h after the unchanged 20% safety margin,
+reproducing both older manual totals exactly after rounding. Frequent door opening
+on would instead give 90 BTU/h at 800 cu ft, so that option does not explain 81.
+
+No checked-in test in the available history expected 1268/1296 for the standard
+room: those figures were supplied as manual references in the Stage 2 request and
+recorded in the previous README. The standard-room test expectations were already
+1257/1285. The vaulted setting reproduces the discrepancy in both calculation and
+browser tests; the original external reference's inputs are unavailable, so its
+historical use of that setting cannot be confirmed.
+
+For the standard room, the displayed Analysis categories are:
+
+| Lighting watts | Walls/Ceiling | Doors | Glazing | Infiltration | Internal | Safety Margin |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | 629 | 315 | 0 | 72 | 0 | 210 |
+| 22 | 629 | 315 | 0 | 72 | 23 | 214 |
+
+The 22 W lighting change adds 22 × 3.412 × 5 / 16 × 1.2 = 28.149 BTU/h before
+rounding, matching the displayed 28 BTU/h total increase. Totals and Analysis
+categories are rounded independently. Automated tests assert the exact integer
+totals and categories; a manual reconstruction using rounded intermediate values
+may differ by up to 1 BTU/h. The original 20 W Stage 1 baseline remains 1283 BTU/h.
+No production calculation formula was changed for this investigation.
